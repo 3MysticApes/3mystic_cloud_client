@@ -295,7 +295,11 @@ class cloud_client_aws_config_step_2(base):
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value=profile_data.get("sso_profile_name")):
       profile_data["sso_profile_name"] = existing_sso_profile_name
     
+<<<<<<< HEAD
     self.update_config_profile(profile_name= profile_name, profile_data= profile_data)
+=======
+    self.update_config_profile(config= config, profile_name= profile_name, running_config= running_config)
+>>>>>>> 621b554 (refactor)
     print(f"Profile ({profile_name} saved/updated)")
 
     
