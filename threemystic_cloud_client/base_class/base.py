@@ -1,7 +1,7 @@
-import abc
+from threemystic_common.base_class.base import base as main_base
 
 
-class base(abc.ABC): 
+class base(main_base): 
   """This is a library to help with the interaction with the cloud providers"""
 
   def __init__(self, logger_name, init_object = None, common = None,  logger = None, *args, **kwargs) -> None:
