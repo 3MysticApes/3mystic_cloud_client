@@ -197,11 +197,7 @@ class cloud_client_aws_config_step_2(base):
             "validation": f"Valid options for Yes are: {self.get_common().helper_type().bool().is_true_values()}\nValid options for No are: {self.get_common().helper_type().bool().is_false_values()}",
           },
           "conversion": lambda item: self.get_common().helper_type().bool().is_true(check_value= item),
-<<<<<<< HEAD
           "desc": f"Use preconfigured aws cli sso profile (created with aws configure sso --profile <profile_name>)\nValid optiond for yes: {self.get_common().helper_type().bool().is_true_values()}{self.__get_existing_text(exiting_value= profile_data.get('use_cli_profile'))}",
-=======
-          "desc": f"Use preconfigured aws cli sso profile (created with aws configure sso --profile <profile_name>)\nValid optiond for yes: {self.get_common().helper_type().bool().is_true_values()}{'' if self.get_common().helper_type().string().is_null_or_whitespace(string_value= existing_sso_profile_name) else '\n(If empty it will use the existing '+running_config.get('use_cli_profile')+')'}",
->>>>>>> 4064ffb (small refactor)
           "handler": generate_data_handlers.get_handler(handler= "base"),
           "default": profile_data.get("use_cli_profile") == True,
           "optional": False
@@ -279,7 +275,7 @@ class cloud_client_aws_config_step_2(base):
           "validation": lambda item: self.get_common().helper_type().bool().is_bool(check_value= item),
           "allow_empty": True,
           "messages":{
-            "validation": f"Valid options for Yes are: {self.get_common().helper_type().bool().is_true_values()}\nValid options for No are: {self.get_common().helper_type().bool().is_false_values()}{'' if self.get_common().helper_type().string().is_null_or_whitespace(string_value= existing_sso_profile_name) else '\n(If empty it will use the existing '+running_config.get('use_cli_profile')+')'}",
+            "validation": f"Valid options for Yes are: {self.get_common().helper_type().bool().is_true_values()}\nValid options for No are: {self.get_common().helper_type().bool().is_false_values()}",
           },
           "conversion": lambda item: self.get_common().helper_type().bool().is_true(check_value= item),
           "desc": f"Is this the default profile 3mystic apps should use when profile is not passed. You can only have one profile,\nValid optiond for yes: {self.get_common().helper_type().bool().is_true_values()}{self.__get_existing_text(exiting_value= profile_data.get('default_profile'))}",
@@ -299,11 +295,7 @@ class cloud_client_aws_config_step_2(base):
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value=profile_data.get("sso_profile_name")):
       profile_data["sso_profile_name"] = existing_sso_profile_name
     
-<<<<<<< HEAD
     self.update_config_profile(profile_name= profile_name, profile_data= profile_data)
-=======
-    self.update_config_profile(config= config, profile_name= profile_name, running_config= running_config)
->>>>>>> 621b554 (refactor)
     print(f"Profile ({profile_name} saved/updated)")
 
     
