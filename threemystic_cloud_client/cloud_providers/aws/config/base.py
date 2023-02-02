@@ -4,12 +4,19 @@ class cloud_client_aws_config_base(base):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-  
   def update_config_profile(self, config, profile_name, running_config, auto_save = True, *args, **kwargs):
-    if config.get("profiles") is None:
-      config["profiles"] = {}
+    if config is None:
+      config = self._load_config()
 
-    config["profiles"][profile_name] = running_config
+    if config.get("profiles") is None:
+      config["profiles"] = {
+      }
+    
+    if config.get("profiles").get("aws") is None:
+      config["profiles"]["aws"] = {
+      }
+
+    config["profiles"]["aws"][profile_name] = running_config
     if auto_save:
       self.save_config(config= config)
 

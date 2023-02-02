@@ -4,7 +4,7 @@ import configparser
 
 class cloud_client_aws_config_step_2(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(logger_name= "cloud_client_aws_config_step_2", *args, **kwargs)
+    super().__init__(logger_name= "cloud_client_aws_config_step_2", provider= "aws", *args, **kwargs)
 
   def step(self, config, is_new_config, *args, **kwargs):
 
@@ -147,11 +147,14 @@ class cloud_client_aws_config_step_2(base):
     return True
     
 
-
+  def __get_existing_text(self, exiting_value):
+    return (f"\n(If empty it will use the existing: {exiting_value})"
+      if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=exiting_value) else ""
+    )
   def __step_process_sso(self, config, profile_name = None, running_config = {}, *args, **kwargs):
     
     existing_sso_profile_name = running_config.get("sso_profile_name")
-    print(existing_sso_profile_name)
+    
     response = self.get_common().generate_data().generate(
       generate_data_config = {
         "use_cli_profile": {
@@ -161,7 +164,7 @@ class cloud_client_aws_config_step_2(base):
             "validation": f"Valid options for Yes are: {self.get_common().helper_type().bool().is_true_values()}\nValid options for No are: {self.get_common().helper_type().bool().is_false_values()}",
           },
           "conversion": lambda item: self.get_common().helper_type().bool().is_true(check_value= item),
-          "desc": f"Use preconfigured aws cli sso profile (created with aws configure sso --profile <profile_name>)\nValid optiond for yes: {self.get_common().helper_type().bool().is_true_values()}{'' if self.get_common().helper_type().string().is_null_or_whitespace(string_value= existing_sso_profile_name) else '\n(If empty it will use the existing '+running_config.get('use_cli_profile')+')'}",
+          "desc": f"Use preconfigured aws cli sso profile (created with aws configure sso --profile <profile_name>)\nValid optiond for yes: {self.get_common().helper_type().bool().is_true_values()}{self.__get_existing_text(exiting_value= running_config.get('use_cli_profile'))}",
           "handler": generate_data_handlers.get_handler(handler= "base"),
           "default": running_config.get("use_cli_profile"),
           "optional": False
@@ -174,7 +177,7 @@ class cloud_client_aws_config_step_2(base):
             "validation": f"Could not find profile.",
           },
           "conversion": lambda item: self.get_common().helper_type().string().trim(string_value= item),
-          "desc": f"Enter the SSO Profile Name{'' if self.get_common().helper_type().string().is_null_or_whitespace(string_value= existing_sso_profile_name) else ' (If empty it will use the existing profile '+existing_sso_profile_name+')'}",
+          "desc": f"Enter the SSO Profile Name{self.__get_existing_text(exiting_value= existing_sso_profile_name)}",
           "handler": generate_data_handlers.get_handler(handler= "base"),
           "default": running_config.get("sso_profile_name"),
           "optional": False
@@ -192,53 +195,57 @@ class cloud_client_aws_config_step_2(base):
         "sso_region": {
           "validation": lambda item: item,
           "skip": lambda item: not item.get("use_cli_profile").get("formatted") if item is not None and item.get("use_cli_profile") is not None else True,
+          "allow_empty": True,
           "messages":{},
           "conversion": lambda item: self.get_common().helper_type().string().trim(item),
-          "desc": f"Enter the default region to use",
+          "desc": f"Enter the default region to use{self.__get_existing_text(exiting_value= running_config.get('sso_region'))}",
           "handler": generate_data_handlers.get_handler(handler= "base"),
           "default": running_config.get("sso_region") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= running_config.get("sso_region")) else "us-east-1",
-          "optional": True
+          "optional": False
         },
         "sso_account_id": {
           "validation": lambda item: self.get_common().helper_type().regex().get(pattern= "^[0-9]{12,}$").fullmatch(str(item)) if item is not None else False,
           "skip": lambda item: not item.get("use_cli_profile").get("formatted") if item is not None and item.get("use_cli_profile") is not None else True,
+          "allow_empty": True,
           "messages":{
             "validation": f"It should be a 12 digit string (if its under 12 characters it should have leading zeros) ex. 000000000001",
           },
           "conversion": lambda item: item,
-          "desc": f"Enter the organization account id (main account id)\n It should be 12 numeric characters.",
+          "desc": f"Enter the organization account id (main account id)\n It should be 12 numeric characters.{self.__get_existing_text(exiting_value= running_config.get('sso_account_id'))}",
           "handler": generate_data_handlers.get_handler(handler= "base"),
           "default": running_config.get("sso_account_id"),
-          "optional": not self.get_common().helper_type().string().is_null_or_whitespace(string_value= running_config.get("sso_account_id"))
+          "optional": False
         },
         "sso_role_name": {
           "validation": lambda item: item,
           "skip": lambda item: not item.get("use_cli_profile").get("formatted") if item is not None and item.get("use_cli_profile") is not None else True,
+          "allow_empty": True,
           "messages":{},
           "conversion": lambda item: self.get_common().helper_type().string().trim(item),
-          "desc": f"Enter the role to use",
+          "desc": f"Enter the role to use{self.__get_existing_text(exiting_value= running_config.get('sso_account_id'))}",
           "handler": generate_data_handlers.get_handler(handler= "base"),
           "default": running_config.get("sso_role_name"),
-          "optional": not self.get_common().helper_type().string().is_null_or_whitespace(string_value= running_config.get("sso_role_name"))
+          "optional": False
         },
         "output": {
           "validation": lambda item: item,
           "skip": lambda item: not item.get("use_cli_profile").get("formatted") if item is not None and item.get("use_cli_profile") is not None else True,
+          "allow_empty": True,
           "messages":{},
           "conversion": lambda item: self.get_common().helper_type().string().trim(item),
-          "desc": f"Enter a valid output format. For a full list goto:\nhttps://docs.aws.amazon.com/cli/latest/userguide/cli-usage-output-format.html",
+          "desc": f"Enter a valid output format. For a full list goto:\nhttps://docs.aws.amazon.com/cli/latest/userguide/cli-usage-output-format.html{self.__get_existing_text(exiting_value= running_config.get('output'))}",
           "handler": generate_data_handlers.get_handler(handler= "base"),
           "default": running_config.get("output") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= running_config.get("output")) else "json",
-          "optional": True
+          "optional": False
         },        
         "default_profile": {
           "validation": lambda item: self.get_common().helper_type().bool().is_bool(check_value= item),
           "allow_empty": True,
           "messages":{
-            "validation": f"Valid options for Yes are: {self.get_common().helper_type().bool().is_true_values()}\nValid options for No are: {self.get_common().helper_type().bool().is_false_values()}{'' if self.get_common().helper_type().string().is_null_or_whitespace(string_value= existing_sso_profile_name) else '\n(If empty it will use the existing '+running_config.get('use_cli_profile')+')'}",
+            "validation": f"Valid options for Yes are: {self.get_common().helper_type().bool().is_true_values()}\nValid options for No are: {self.get_common().helper_type().bool().is_false_values()}",
           },
           "conversion": lambda item: self.get_common().helper_type().bool().is_true(check_value= item),
-          "desc": f"Is this the default profile 3mystic apps should use when profile is not passed. You can only have one profile,\nValid optiond for yes: {self.get_common().helper_type().bool().is_true_values()}",
+          "desc": f"Is this the default profile 3mystic apps should use when profile is not passed. You can only have one profile,\nValid optiond for yes: {self.get_common().helper_type().bool().is_true_values()}{self.__get_existing_text(exiting_value= running_config.get('default_profile'))}",
           "handler": generate_data_handlers.get_handler(handler= "base"),
           "default": self.get_default_default_profile(config = config, profile_name= profile_name, running_config= running_config),
           "optional": False

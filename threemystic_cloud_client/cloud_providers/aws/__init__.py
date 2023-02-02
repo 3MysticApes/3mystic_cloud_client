@@ -5,7 +5,7 @@ from threemystic_cloud_client.cloud_providers.aws.config.step_1 import cloud_cli
 
 class cloud_client_aws(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(logger_name= "cloud_client_aws", *args, **kwargs)
+    super().__init__(logger_name= "cloud_client_aws", provider= "aws", *args, **kwargs)
 
   def config(self, *args, **kwargs):
     cli_doc_link = "https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
@@ -13,7 +13,7 @@ class cloud_client_aws(base):
     saml2aws_doc_link = "https://github.com/Versent/saml2aws"
 
     
-    config = self.load_config()
+    config = self._load_config()
     next_step = step(common= self.get_common(), logger= self.get_logger())
     print("The aws cli is required for setup.")
     print()
