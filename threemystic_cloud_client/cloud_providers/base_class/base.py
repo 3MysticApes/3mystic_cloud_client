@@ -33,6 +33,22 @@ class cloud_client_provider_base(base):
   def aws_config_path(self, *args, **kwargs):
     return "~/.aws/config"
   
+  def profile_exists(self, profile_name, config = None,  *args, **kwargs):
+    if self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_name):
+      return False
+
+    profile_name = profile_name.lower()
+    if config is None:
+      config = self._load_config()
+
+    profiles = config.get("profiles") if config is not None else None 
+    if profiles is None:
+      return False
+    if profiles.get(self.get_provider()) is None:
+      return False
+
+    return profiles.get(self.get_provider()).get(profile_name) is not None
+
   def get_existing_profiles(self, config = None, *args, **kwargs):
     if config is None:
       config = self._load_config()

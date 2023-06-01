@@ -1,6 +1,5 @@
 from threemystic_cloud_client.cloud_providers.aws.base_class.base import cloud_client_provider_aws_base as base
 from threemystic_common.base_class.generate_data.generate_data_handlers import generate_data_handlers
-from threemystic_cloud_client.cloud_providers.aws.config.step_1 import cloud_client_aws_config_step_1 as step
 
 
 class cloud_client_aws(base):
@@ -16,12 +15,26 @@ class cloud_client_aws(base):
   # There is not post init when in Config Mode
   def _post_init(self, *args, **kwargs):
     pass
+  
+  def test(self, *args, **kwargs):
+    from threemystic_cloud_client.cloud_providers.aws.test.step_1 import cloud_client_aws_test_step_1 as test
+    next_step = test(common= self.get_common(), logger= self.get_logger(), *args, **kwargs)
 
-  def config(self, *args, **kwargs):
-    
-    
     config = self._load_config()
+
+    if self.is_cli_installed(config= config) != True:
+      print("Please install the aws cli and if needed saml2aws before continuing")
+      return
+    
+    next_step.step(config= config)
+
+  def config(self, *args, **kwargs): 
+    
+    from threemystic_cloud_client.cloud_providers.aws.config.step_1 import cloud_client_aws_config_step_1 as step
     next_step = step(common= self.get_common(), logger= self.get_logger())
+
+    config = self._load_config()
+
     print("The aws cli is required for setup.")
     print()
     print(f"if you need to install the cli you can goto here: {self._links['cli_doc_link']}\nIt is also highly recommended to install the ssm plugin here: {self._links['ssm_doc_link']}")
