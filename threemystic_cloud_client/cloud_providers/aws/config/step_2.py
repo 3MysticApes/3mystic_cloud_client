@@ -123,9 +123,20 @@ class cloud_client_aws_config_step_2(base):
     
     profile_name = self.get_common().helper_type().string().trim(string_value= profile_name)  
     config_parser = configparser.ConfigParser()
-    with self.get_common().helper_path().expandpath_user(path= self.aws_config_path()).open(mode="r") as config_file:
-      config_parser.read_file(config_file)
-
+    if(self.get_common().helper_path().path_exists(path= self.aws_config_path())):
+      with self.get_common().helper_path().expandpath_user(path= self.aws_config_path()).open(mode="r") as config_file:
+        config_parser.read_file(config_file)
+    else:
+      print()
+      print()
+      print("*********************************************************")
+      print(f"AWS config path not found: {self.aws_config_path()}")
+      print("setup will not work until aws is configured")
+      print("*********************************************************")
+      print()
+      print()
+      
+      return True
     return config_parser.has_section(f"profile {profile_name}")
 
   def get_default_default_profile(self, config, profile_name, running_config):

@@ -15,11 +15,18 @@ class cloud_client_cli(base_process_options):
       },
       parser_args = {
         # I can create other actions just by duplication this and changing the const
-        "--config,-config": {
+        "--config,-c": {
             "default": None, 
             "const": "config",
             "dest": "client_action",
             "help": "Action: This is so you can setup the cloud client to work with various providers",
+            "action": 'store_const'
+        },
+        "--test,-t": {
+            "default": None, 
+            "const": "test",
+            "dest": "client_action",
+            "help": "Action: This is so you can test the config setup to ensure the base connection is good",
             "action": 'store_const'
         },
       }
@@ -34,8 +41,13 @@ class cloud_client_cli(base_process_options):
     
   def __process_client_action(self, action):
     if action == "config":
-      from threemystic_cloud_client.cli.actions.config import cloud_client_config
-      cloud_client_config(cloud_client= self._cloud_client).main()
+      from threemystic_cloud_client.cli.actions.config import cloud_client_config as user_action
+      user_action(cloud_client= self._cloud_client).main()
+      return
+
+    if action == "test":
+      from threemystic_cloud_client.cli.actions.test import cloud_client_test as user_action
+      user_action(cloud_client= self._cloud_client).main()
       return
 
     return

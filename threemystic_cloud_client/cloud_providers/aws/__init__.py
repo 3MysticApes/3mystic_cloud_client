@@ -1,4 +1,4 @@
-from threemystic_cloud_client.cloud_providers.base_class.base import cloud_client_provider_base as base
+from threemystic_cloud_client.cloud_providers.aws.base_class.base import cloud_client_provider_aws_base as base
 from threemystic_common.base_class.generate_data.generate_data_handlers import generate_data_handlers
 from threemystic_cloud_client.cloud_providers.aws.config.step_1 import cloud_client_aws_config_step_1 as step
 
@@ -7,19 +7,26 @@ class cloud_client_aws(base):
   def __init__(self, *args, **kwargs):
     super().__init__(logger_name= "cloud_client_aws", provider= "aws", *args, **kwargs)
 
-  def config(self, *args, **kwargs):
-    cli_doc_link = "https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
-    ssm_doc_link = "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html"
-    saml2aws_doc_link = "https://github.com/Versent/saml2aws"
+    self._links = {
+      "cli_doc_link": "https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html",
+      "ssm_doc_link": "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html",
+      "saml2aws_doc_link": "https://github.com/Versent/saml2aws"
+    }
+  
+  # There is not post init when in Config Mode
+  def _post_init(self, *args, **kwargs):
+    pass
 
+  def config(self, *args, **kwargs):
+    
     
     config = self._load_config()
     next_step = step(common= self.get_common(), logger= self.get_logger())
     print("The aws cli is required for setup.")
     print()
-    print(f"if you need to install the cli you can goto here: {cli_doc_link}\nIt is also highly recommended to install the ssm plugin here: {ssm_doc_link}")
+    print(f"if you need to install the cli you can goto here: {self._links['cli_doc_link']}\nIt is also highly recommended to install the ssm plugin here: {self._links['ssm_doc_link']}")
     print()
-    print(f"If you are using saml2aws you need to also install {saml2aws_doc_link}")
+    print(f"If you are using saml2aws you need to also install {self._links['saml2aws_doc_link']}")
     print()
     print()
     print("-----------------------------")

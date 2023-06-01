@@ -41,7 +41,12 @@ class cloud_client_provider_base(base):
     return profiles.get(self.get_provider()) if profiles is not None else None
     
     
+  def config(self, *args, **kwargs):
+    print("Provider config not configured")
   
+  def test(self, *args, **kwargs):
+    print("Provider test config not configured")
+
   def _load_config(self, *args, **kwargs):
     return self.get_common().helper_config().load(
       path= self.config_path(),
