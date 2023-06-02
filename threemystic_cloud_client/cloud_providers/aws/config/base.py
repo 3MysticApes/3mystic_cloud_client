@@ -16,7 +16,7 @@ class cloud_client_aws_config_base(base):
     if(profile_data["default_profile"]):
       if(profile_name != self.get_default_profile_name() and self.has_default_profile()):
 
-        for existing_profile, existing_profile_data in self.get_config_profiles():
+        for existing_profile, existing_profile_data in self.get_config_profiles().items():
           if(not existing_profile_data["default_profile"] or existing_profile == profile_name):
             continue
 
