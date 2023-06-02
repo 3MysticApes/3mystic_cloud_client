@@ -11,7 +11,12 @@ class cloud_client_provider_aws_base(base):
     # This update should be temporary until boto version 1.28 is released
     os.environ["BOTO_DISABLE_COMMONNAME"] = "true" 
 
-    super().__init__(*args, **kwargs)
+    super().__init__(*args, **kwargs)   
+    self.links = {
+      "cli_doc_link": "https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html",
+      "ssm_doc_link": "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html",
+      "saml2aws_doc_link": "https://github.com/Versent/saml2aws"
+    }
 
 
   def _post_init(self, *args, **kwargs):
