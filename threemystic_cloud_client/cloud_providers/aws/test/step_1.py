@@ -7,15 +7,15 @@ class cloud_client_aws_test_step_1(base):
     super().__init__(logger_name= "cloud_client_aws_test", provider= "aws", *args, **kwargs)
     
 
-  def step(self, config, *args, **kwargs):
-    if not super().step(config= config, *args, **kwargs):
+  def step(self, *args, **kwargs):
+    if not super().step( *args, **kwargs):
       return
     
     
     response = self.get_common().generate_data().generate(
       generate_data_config = {
         "profile": {
-            "validation": lambda item: self.profile_exists(config= config, profile_name= item),
+            "validation": lambda item: self.has_config_profile_name( profile_name= item),
             "messages":{
               "validation": f"Please enter a valid existing Cloud Client Profile",
             },
@@ -23,7 +23,7 @@ class cloud_client_aws_test_step_1(base):
             "desc": f"What Cloud Client Profile to load",
             "handler": generate_data_handlers.get_handler(handler= "base"),
             "optional": True,
-            "default": 
+            "default": self.get_default_profile_name()
         }
       }
     )
@@ -31,12 +31,12 @@ class cloud_client_aws_test_step_1(base):
     if response is None:
       return
 
-    if not self.profile_exists(config= config, profile_name= response["profile"].get("formated")):
+    if not self.has_config_profile_name(profile_name= response["profile"].get("formated")):
       print(f"Profile Not Found: {response['profile'].get('formated')}")
       return
 
     print(f"Profile Found: {response['profile'].get('formated')}")
     from threemystic_cloud_client.cloud_providers.aws.test.step_2 import cloud_client_aws_test_step_2 as nextstep
-    nextstep(init_object = self).step(config= config, profile= response['profile'].get('formated'))
+    nextstep(init_object = self).step( profile_name= response['profile'].get('formated'))
     
   

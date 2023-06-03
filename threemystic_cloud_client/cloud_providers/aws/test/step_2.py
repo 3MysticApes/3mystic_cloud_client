@@ -7,9 +7,12 @@ class cloud_client_aws_test_step_1(base):
     super().__init__(logger_name= "cloud_client_aws_test", provider= "aws", *args, **kwargs)
     
 
-  def step(self, config, profile, *args, **kwargs):
-    if not super().step(config= config, *args, **kwargs):
+  def step(self, profile_name, *args, **kwargs):
+    if not super().step(*args, **kwargs):
       return
+    
+    profile_data = self.get_config_profile_name(profile_name= profile_name)
+
     
     
     

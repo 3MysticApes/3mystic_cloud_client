@@ -75,7 +75,7 @@ class cloud_client_aws_config_step_2(base):
       if(self.__get_response_item(key= "update_existing", response= response_existing) == False):
         print("Please rerun config and use a different profile name")
         return
-        
+
       profile_data = self.get_config_profile_name(profile_name= profile_name)
       profile_data["auth_method"] = self.__get_response_item(key= "auth_method", response= response) 
     
@@ -95,15 +95,12 @@ class cloud_client_aws_config_step_2(base):
     
     profile_name = self.__get_response_item(key= "profile_name", response= response)
 
-    if profile_name is None:
+    if self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_name):      
+      print(f"Profile Name was not valid: {profile_name}")
       return
     
-    profile_data = None
-    for existing_profile_name, existing_config in self.get_existing_profiles().items():
-      if existing_profile_name == profile_name:
-        profile_data = existing_config
-        break
-
+    profile_data = self.get_config_profile_name(profile_name= profile_name)
+    
     if profile_data is None:
       print("Profile not found")
       return
@@ -186,7 +183,9 @@ class cloud_client_aws_config_step_2(base):
     )
 
   def __step_process_sso(self, profile_name = None, profile_data = {}, *args, **kwargs):
-    
+    if(profile_data is None):
+      profile_data = {}
+
     existing_sso_profile_name = profile_data.get("sso_profile_name")
     
     response = self.get_common().generate_data().generate(
@@ -200,7 +199,7 @@ class cloud_client_aws_config_step_2(base):
           "conversion": lambda item: self.get_common().helper_type().bool().is_true(check_value= item),
           "desc": f"Use preconfigured aws cli sso profile (created with aws configure sso --profile <profile_name>)\nValid optiond for yes: {self.get_common().helper_type().bool().is_true_values()}{self.__get_existing_text(exiting_value= profile_data.get('use_cli_profile'))}",
           "handler": generate_data_handlers.get_handler(handler= "base"),
-          "default": profile_data.get("use_cli_profile"),
+          "default": profile_data.get("use_cli_profile") == True,
           "optional": False
         },
         "sso_profile_name": {

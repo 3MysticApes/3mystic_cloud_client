@@ -17,7 +17,7 @@ class cloud_client_aws(base):
       print("Please install the aws cli")
       return
     
-    next_step.step(config= config)
+    next_step.step()
 
   def action_config(self, *args, **kwargs): 
     

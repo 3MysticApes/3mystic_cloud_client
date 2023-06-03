@@ -103,7 +103,8 @@ class cloud_client_provider_base(base):
   def get_config_profile_name(self, profile_name = None, *args, **kwargs):
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_name):
       return False
-      
+    
+    profile_name = profile_name.lower()
     for existing_profile_name, profile_data in self.get_config_profiles().items():
       if(existing_profile_name != profile_name):
         continue
