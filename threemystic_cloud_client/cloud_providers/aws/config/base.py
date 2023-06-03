@@ -5,10 +5,6 @@ class cloud_client_aws_config_base(base):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-  # There is not post init when in Config Mode
-  def _post_init(self, *args, **kwargs):
-    pass
-
   def update_config_profile(self, profile_name, profile_data, auto_save = True, *args, **kwargs):
 
     profile_name = profile_name.lower()
