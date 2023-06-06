@@ -1,8 +1,0 @@
-from threemystic_cloud_client.cloud_providers.aws.base_class.base import cloud_client_provider_aws_base as base
-
-class cloud_client_aws_test_base(base):
-  def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
-
-  def step(self, *args, **kwargs):
-    return True
