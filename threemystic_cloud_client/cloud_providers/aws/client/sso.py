@@ -79,3 +79,11 @@ class cloud_client_aws_client_sso(base):
       return True
     
     return False
+  
+  def _load_aws_sso_config(self):
+    aws_credentials_config = self.get_common().helper_config().load(
+      config_type = "config",
+      path= self.get_aws_user_path_config()
+    )
+
+    profile_section = aws_credentials_config.has_section(f"profile {self.get_profile()['profile_name']}")
