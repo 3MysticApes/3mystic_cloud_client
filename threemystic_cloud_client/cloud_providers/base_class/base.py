@@ -37,8 +37,11 @@ class cloud_client_provider_base(base):
   def config_path(self, *args, **kwargs):
     return self.get_common().get_threemystic_config_path().joinpath(f"3mystic_cloud_client_config_{self.get_provider()}")
     
-  def aws_config_path(self, *args, **kwargs):
-    return "~/.aws/config"
+  def get_aws_user_path(self, *args, **kwargs):
+    return "~/.aws"
+  
+  def get_aws_user_path_config(self, *args, **kwargs):
+    return f"{self.get_aws_user_path()}/config"
   
   def get_default_profile_name(self, *args, **kwargs):
 

@@ -28,7 +28,7 @@ class cloud_client_aws_client_auto(base):
     return self.__profile
   
   def __set_profile(self, profile_name = None, *args, **kwargs):
-    if self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_name):
+    if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_name):
       profile_data = self.get_config_profile_name(profile_name= profile_name)
       if profile_data is None:
         raise self._main_reference.exception().exception(

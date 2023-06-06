@@ -1,3 +1,5 @@
+import os
+import abc
 from threemystic_cloud_client.cloud_providers.aws.base_class.base import cloud_client_provider_aws_base as base
 from botocore import session as botocore_session, credentials as botocore_credentials
 from botocore.config import Config as botocore_config_config
@@ -39,38 +41,55 @@ class cloud_client_aws_client_base(base):
     self.__profile = profile_data
 
   def _post_init(self, *args, **kwargs):
+    self._load_base_configs()
     self._set_main_account_id()
     self._set_organization_account_id()
   
+  @abc.abstractmethod
+  def _internal_load_base_configs(self):
+    pass
+  
+  def _load_base_configs(self):
+    self._internal_load_base_configs()
+
+  @abc.abstractmethod
   def get_default_rolename(self, *args, **kwargs):
-    raise Exception("fix")
+    pass
   
+  @abc.abstractmethod
   def get_default_region(self, *args, **kwargs):
-    raise Exception("fix")  
+    pass
   
+  @abc.abstractmethod
   def get_rolename(self, *args, **kwargs):
-    raise Exception("fix")
+    pass
   
+  @abc.abstractmethod
   def get_main_account_id(self, *args, **kwargs):
-    raise Exception("fix")
+    pass
 
+  @abc.abstractmethod
   def get_organization_account_id(self, *args, **kwargs):
-    raise Exception("fix")
+    pass
 
+  @abc.abstractmethod
   def get_organization_account(self, *args, **kwargs):
-    raise Exception("fix")
+    pass
 
+  @abc.abstractmethod
   def set_awscli_rolename(self, *args, **kwargs):
-    raise Exception("fix")
+    pass
 
   # set_main_account_id  
+  @abc.abstractmethod
   def _set_main_account_id(self, *args, **kwargs):
-    raise Exception("fix")
+    pass
 
 
   # set_organization_account_id
+  @abc.abstractmethod
   def _set_organization_account_id(self, *args, **kwargs):    
-    raise Exception("fix")
+    pass
   
   def _get_organization_client(self, *args, **kwargs):   
     if hasattr(self, "__org_client"):
