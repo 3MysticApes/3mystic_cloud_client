@@ -100,18 +100,7 @@ class cloud_client_aws_client_base(base):
     self._load_base_configs()
   
   @abc.abstractmethod
-  def _internal_load_base_configs(self):
-    pass
-  
   def _load_base_configs(self):
-    self._internal_load_base_configs()
-
-  @abc.abstractmethod
-  def get_default_rolename(self, *args, **kwargs):
-    pass
-  
-  @abc.abstractmethod
-  def get_default_region(self, *args, **kwargs):
     pass
   
   @abc.abstractmethod
@@ -136,6 +125,10 @@ class cloud_client_aws_client_base(base):
   
   @abc.abstractmethod
   def get_default_account(self, *args, **kwargs):
+    pass
+  
+  @abc.abstractmethod
+  def authenticate_session(self, *args, **kwargs):
     pass
 
   
@@ -178,9 +171,6 @@ class cloud_client_aws_client_base(base):
     finally:
       self._set_authenticating_session(is_authenticating_session= False)
   
-  def authenticate_session(self, *args, **kwargs):
-    self._authenticate_session()
-  
   def is_authenticating_session(self, *args, **kwargs):
     if(hasattr(self, "_is_authenticating_session")):
       return self._is_authenticating_session
@@ -215,7 +205,7 @@ class cloud_client_aws_client_base(base):
       max_pool_connections = max_pool_connections
     )
 
-    if self.common.isNullOrWhiteSpace(region):
+    if self.get_common().helper_type().string().is_null_or_whitespace(string_value= region):
       return config
     
     config.region_name = region
@@ -246,9 +236,8 @@ class cloud_client_aws_client_base(base):
        self._get_created_boto_clients()[cache_key] = session.create_client(client, config= self.get_boto_config(region= region, *argv, **kwargs))
        return self._get_created_boto_clients()[cache_key]
        
-    if hasattr(session, "client"):
-      self._get_created_boto_clients()[cache_key] = session.client(client, config= self.get_boto_config(region= region, *argv, **kwargs))
-      return self._get_created_boto_clients()[cache_key]
+    self._get_created_boto_clients()[cache_key] = session.client(client, config= self.get_boto_config(region= region, *argv, **kwargs))
+    return self._get_created_boto_clients()[cache_key]
 
   def _convert_assume_role_credentials_boto_session(self, credentials):
     experation = credentials["Expiration"]

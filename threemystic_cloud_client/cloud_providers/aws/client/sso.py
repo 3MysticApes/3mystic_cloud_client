@@ -120,7 +120,7 @@ class cloud_client_aws_client_sso(base):
     return self.get_common().helper_type().datetime().is_token_expired_now(compare_datetime= self._get_session_expires())
     
     
-  def _authenticate_session(self, *args, **kwargs):
+  def authenticate_session(self, *args, **kwargs):
     if(self.get_profile()['profile_data']['use_cli_profile']):
       self.__aws_sso_login_profile()
       return
@@ -180,7 +180,7 @@ class cloud_client_aws_client_sso(base):
         )
 
 
-  def _internal_load_base_configs(self, *args, **kwargs):
+  def _load_base_configs(self, *args, **kwargs):
     if(self.get_profile()['profile_data']['use_cli_profile']):
       self.__internal_load_base_configs_ssoprofile()
       return
