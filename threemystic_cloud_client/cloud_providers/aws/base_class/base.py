@@ -18,7 +18,7 @@ class cloud_client_provider_aws_base(base):
   def get_account_name(self, account):
     if account is None:
       return None
-    if self.common.is_type(account, str):
+    if self.get_common().helper_type().general().is_type(obj= account, type_check= str):
       return account
 
     if account.get("Name"):
@@ -39,7 +39,7 @@ class cloud_client_provider_aws_base(base):
   def get_account_id(self, account):
     if account is None:
       return None
-    if self.common.is_type(account, str):
+    if self.get_common().helper_type().general().is_type(obj= account, type_check= str):
       return account
     
     if account.get("Id"):

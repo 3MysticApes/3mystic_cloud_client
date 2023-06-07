@@ -7,7 +7,7 @@ class cloud_client_aws_client_auto(base):
     self.__set_profile(*args, **kwargs)
   
   def get_profile(self, *args, **kwargs):
-    if(not hasattr(self, "__profile")):
+    if(not hasattr(self, "_profile")):
       raise self._main_reference.exception().exception(
           exception_type = "generic"
         ).type_error(
@@ -16,7 +16,7 @@ class cloud_client_aws_client_auto(base):
           message = f"Profile was not set"
         )
     
-    if(self.__profile is None):
+    if(self._profile is None):
       raise self._main_reference.exception().exception(
           exception_type = "generic"
         ).type_error(
@@ -25,7 +25,7 @@ class cloud_client_aws_client_auto(base):
           message = f"Profile is None"
         )
     
-    return self.__profile
+    return self._profile
   
   def __set_profile(self, profile_name = None, *args, **kwargs):
     if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_name):
@@ -39,13 +39,13 @@ class cloud_client_aws_client_auto(base):
           message = f"profile_name is not found"
         )
       
-      self.__profile = {
+      self._profile = {
         "profile_name": profile_name,
         "profile_data": profile_data
       }
       return
     
-    self.__profile = self.get_default_profile()
+    self._profile = self.get_default_profile()
 
   def get_client(self, *args, **kwargs):
     if self.get_profile()["profile_data"]["auth_method"].lower() == "sso":
