@@ -4,7 +4,10 @@ from threemystic_cloud_client.cloud_providers.aws.base_class.base import cloud_c
 from botocore import session as botocore_session, credentials as botocore_credentials
 from botocore.config import Config as botocore_config_config
 from boto3 import Session as boto_session
+from botocore.exceptions import ClientError
 from polling2 import TimeoutException, poll
+import time
+from random import randint
 
 class cloud_client_aws_client_base(base):
   def __init__(self, *args, **kwargs):
@@ -131,7 +134,128 @@ class cloud_client_aws_client_base(base):
   def authenticate_session(self, *args, **kwargs):
     pass
 
+  async def async_general_boto_call_array(self, *args, **kwargs):
+    return self.general_boto_call_array(*args, **kwargs)
   
+  async def async_general_boto_call_single(self, *args, **kwargs):
+    return self.general_boto_call_single(*args, **kwargs)
+  
+  def general_boto_call_single(self, *args, **kwargs):
+    data = self.general_boto_call_array(*args, **kwargs)
+    if data is None or len(data) < 1:
+      return None
+    
+    return data[0]
+
+  def general_boto_call_array(self, boto_call, boto_params, boto_key, boto_nextkey, retryCount = 10, verbose = False, boto_nextkey_param = None, error_codes_return = None, error_codes_continue = None, error_codes_raise = None, logger = None):
+    return_data = []
+
+    if boto_key is not None and self.get_common().helper_type().general().is_type(obj=boto_key, type_check= str):
+      local_boto_key = boto_key
+      boto_key = lambda item: item[local_boto_key] if item.get(local_boto_key) is not None else []
+
+    if boto_nextkey_param is None:
+      boto_nextkey_param = boto_nextkey
+
+    if error_codes_continue is not None:
+      error_codes_continue = [code.lower() for code in error_codes_continue]
+
+    if error_codes_return is not None:
+      error_codes_return = [code.lower() for code in error_codes_return]
+
+    if error_codes_raise is not None:
+      error_codes_raise = [code.lower() for code in error_codes_raise]
+
+    boto_response = None
+    while True:
+      currentAttempt = 0
+      slowdown_count = 0
+      
+      while currentAttempt < retryCount:
+        currentAttempt+=1  
+        try:  
+          if boto_params is not None:
+            boto_response = boto_call(boto_params)  
+          else:
+            boto_response = boto_call()  
+          break          
+        except ClientError as err:
+          if error_codes_raise is not None and err.response["Error"]["Code"].lower() in error_codes_raise:
+            raise self.get_common().exception().exception(
+              exception_type = "generic"
+            ).type_error(
+              logger = self.get_common().get_logger(),
+              name = "General Boto Call Raise",
+              message = f"Profile was not set",
+              exception= err
+            )
+
+          if error_codes_continue is not None and err.response["Error"]["Code"].lower() in error_codes_continue:
+            continue
+
+          if error_codes_return is not None and err.response["Error"]["Code"].lower() in error_codes_return:
+            return return_data
+          
+          if err.response["Error"]["Code"].lower() == "accessdeniedexception":
+            raise self.get_common().exception().exception(
+              exception_type = "generic"
+            ).type_error(
+              logger = self.get_common().get_logger(),
+              name = "General Boto Call accessdeniedexception",
+              message = f"accessdeniedexception - {boto_call} - {boto_params}",
+              exception= err
+            )
+          
+          if err.response['Error']["Code"] == 'SlowDown':
+            time.sleep(30)
+            if slowdown_count < 5:
+              currentAttempt-=1
+            continue
+
+          if verbose:
+            self.get_common().get_logger().exception(
+              msg=f"Params:{boto_params} - err: {err}",
+              extra= {
+                "main_exception"= err
+              }
+            )
+
+          if currentAttempt >= retryCount:
+            boto_response = None
+            raise self.get_common().exception().exception(
+              exception_type = "generic"
+            ).type_error(
+              logger = self.get_common().get_logger(),
+              name = "General Boto Call err retry ",
+              message = f"accessdeniedexception - {boto_call} - {boto_params}",
+              exception= err
+            )
+            
+          if currentAttempt > 2:
+            logger.exception(msg= "Error with call: {}".format(err), exc_info= err)
+            if verbose:
+              self.get_common().get_logger().info(msg= "Error with call: {}".format(err))
+
+          sleepTime = (2**currentAttempt)+randint(1,10)
+          if sleepTime > 30:
+            sleepTime = 30
+          time.sleep(sleepTime)
+          continue      
+
+      if boto_response is None or boto_key is None:
+        return [ ]
+        
+
+      if not self.get_common().helper_type().general().is_type(obj= boto_key(boto_response), type_check= list):
+        return [ boto_key(boto_response) ]
+
+      return_data += boto_key(boto_response)
+
+      if (boto_nextkey is None) or (boto_nextkey is not None and self.get_common().helper_type().string().is_null_or_whitespace(string_value= boto_response.get(boto_nextkey))) or boto_params is None:
+        return return_data
+
+      boto_params[boto_nextkey_param] = boto_response.get(boto_nextkey)
+
   def get_organization_account(self, *args, **kwargs):
     if(hasattr(self, "_organization_account")):
       if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._organization_account):
@@ -288,6 +412,71 @@ class cloud_client_aws_client_base(base):
       
     self._get_created_boto_sessions()[cache_key] = boto_session(botocore_session= session)
     return self._get_created_boto_sessions[cache_key]
+  
+  def _get_accounts(self, update_accountlist = False, include_suspended = False):
     
+    if not self._account_list is None and len(self._account_list) > 0 and not update_accountlist:
+      return self._account_list
+    
+    self._account_list = self.get_common().general_boto_call_array(
+      boto_call=lambda item: self._get_organization_client().list_accounts(**item),
+      boto_params={},
+      boto_nextkey = "NextToken",
+      boto_key="Accounts"
+    )
+    
+    if include_suspended == False:
+      self._account_list = [ acct for acct in self._account_list if acct["Status"].lower() != "suspended" ]
+    
+    return self._account_list 
+
+  def get_accountids_by_ou(self, org_ou, exclude_ous = None, **kwargs):
+    if org_ou is None:
+      org_ou = []
+    
+    if exclude_ous is None:
+      exclude_ous = []
+    
+    if self.get_common().helper_type().general().is_type(obj= org_ou, type_check= str) and not self.get_common().helper_type().string().is_null_or_whitespace(string_value= org_ou): 
+      org_ou = [ ou.strip() for ou in org_ou.split(",") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= ou) ]
+    
+    account_list = []
+    for ou in org_ou:
+      child_ous = [child_ou["Id"] for child_ou in self.general_boto_call_array(
+        boto_call=lambda item: self._get_organization_client().list_children(**item),
+        boto_params={"ParentId": ou, "ChildType": "ORGANIZATIONAL_UNIT"},
+        boto_nextkey = "NextToken",
+        boto_key="Children"
+      ) if f'-{child_ou["Id"].lower()}' not in exclude_ous]
+      account_list += self.get_accountids_by_ou(org_ou= child_ous, exclude_ous= exclude_ous)
+      account_list += [account["Id"] for account in self.general_boto_call_array(
+        boto_call=lambda item: self._get_organization_client().list_children(**item),
+        boto_params={"ParentId": ou, "ChildType": "ACCOUNT"},
+        boto_nextkey = "NextToken",
+        boto_key="Children"
+      )]
+    
+    return list(dict.fromkeys(account_list))
+  
+  def get_accounts(self, account = None, update_accountlist = False, include_suspended = False):
+    all_accounts = self._get_accounts(update_accountlist=update_accountlist, include_suspended=include_suspended)
+    if self.get_common().helper_type().general().is_type(obj= account, type_check= str) and not self.get_common().helper_type().string().is_null_or_whitespace(string_value= account):
+      account = [ acct.strip() for acct in account.split(",") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= acct) ]
+
+    if self.get_common().helper_type().general().is_type(obj= account, type_check= list) and not None:
+      search_accounts_accounts = [ acct for acct in account if not acct.lower().startswith("ou-") and not acct.lower().startswith("-") ]
+      search_accounts_ous = [ acct for acct in account if acct.lower().startswith("ou-") ]
+      exclude_accounts_ous = [ acct for acct in account if acct.lower().startswith("-ou-") ]
+      exclude_accounts = [ acct for acct in account if acct.lower().startswith("-") and not acct.lower().startswith("-ou-") ]
+      account = list(dict.fromkeys(search_accounts_accounts + self.get_accountids_by_ou(org_ou= search_accounts_ous, exclude_ous= exclude_accounts_ous)))
+
+      return [ acct for acct in all_accounts if f'-{acct["Id"]}' not in exclude_accounts and  self.get_common().helper_type().list().find_item(data= account, filter= lambda item: item == acct["Id"]) is not None ]
+
+    elif account is not None:
+      self.get_common().get_logger().warning(f'unknown data type for accounts {type(account)}, when trying to get accounts')
+      return None
+
+
+    return all_accounts
     
     

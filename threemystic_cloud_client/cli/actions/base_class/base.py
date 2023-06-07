@@ -4,8 +4,11 @@ from threemystic_common.base_class.generate_data.generate_data_handlers import g
 
 
 class cloud_client_config_base():
-  def __init__(self, cloud_client, *args, **kwargs):
-    self._cloud_client = cloud_client
+  def __init__(self, cloud_client = None, *args, **kwargs):
+    self._cloud_client = cloud_client 
+    if self._cloud_client is None:
+      from threemystic_cloud_client.cloud_client import cloud_client
+      self._cloud_client = cloud_client()
 
   def main(self, *args, **kwargs):
     response = self._cloud_client.get_common().generate_data().generate(

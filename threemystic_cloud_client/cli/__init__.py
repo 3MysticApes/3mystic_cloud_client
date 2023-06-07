@@ -46,7 +46,7 @@ class cloud_client_cli(base_process_options):
     self._client_action = processed_info["processed_data"].get("client_action")
     
     
-  def __process_client_action(self, action):
+  def process_client_action(self, action):
     if action == "version":
       self.version_dispaly()
       return
@@ -77,7 +77,7 @@ class cloud_client_cli(base_process_options):
       self.parser.print_help()
       return
     
-    self.__process_client_action(action= self._client_action )
+    self.process_client_action(action= self._client_action )
 
 def main(*args, **kwargs):    
   cloud_client_cli(*args, **kwargs).main(*args, **kwargs)

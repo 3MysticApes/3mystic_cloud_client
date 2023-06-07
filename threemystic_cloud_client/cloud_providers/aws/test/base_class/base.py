@@ -5,4 +5,8 @@ class cloud_client_aws_test_base(base):
     super().__init__(*args, **kwargs)
 
   def step(self, *args, **kwargs):
+    if not self.has_config_profiles():
+      from threemystic_cloud_client.cli import cloud_client_cli
+      cloud_client_cli().process_client_action(action= "config")
+
     return True
