@@ -99,9 +99,6 @@ class cloud_client_provider_base(base):
     
     self.get_config()["profiles"] = {}
     return self.get_config_profiles()
-  
-  def has_config_profiles(self, *args, **kwargs):
-    return len(self.self.get_config_profiles()) > 0
 
   def get_config_profile_name(self, profile_name = None, *args, **kwargs):
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_name):
