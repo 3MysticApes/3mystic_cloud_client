@@ -1,18 +1,17 @@
-from threemystic_cloud_client.cloud_providers.aws.config.base import cloud_client_aws_config_base as base
+from threemystic_cloud_client.cloud_providers.aws.config.base_class.base import cloud_client_aws_config_base as base
 from threemystic_common.base_class.generate_data.generate_data_handlers import generate_data_handlers
-from threemystic_cloud_client.cloud_providers.aws.config.step_2 import cloud_client_aws_config_step_2 as step
+from threemystic_cloud_client.cloud_providers.aws.config.step_2 import cloud_client_aws_config_step_2 as nextstep
 
 
 class cloud_client_aws_config_step_1(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(logger_name= "cloud_client_aws_config_step_1", *args, **kwargs)
+    super().__init__(logger_name= "cloud_client_aws_config_step_1", provider= "aws", *args, **kwargs)
     
 
-  def step(self, config, *args, **kwargs):
+  def step(self, *args, **kwargs):
     
-    if not super().step(config= config):
+    if not super().step(force_cli_installed_prompt= True):
       return
-    
     
     response = self.get_common().generate_data().generate(
       generate_data_config = {
@@ -33,6 +32,6 @@ class cloud_client_aws_config_step_1(base):
     if response is None:
       return
 
-    step(init_object = self).step(config= config, is_new_config= response["type"].get("formated") == True)
+    nextstep(init_object = self).step(is_new_config= response["type"].get("formated") == True)
     
   

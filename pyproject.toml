@@ -27,15 +27,9 @@ classifiers = [
 ]
 dependencies = [
   "colorama; platform_system == 'Windows'",
-  "asyncio >= 3.4.3",
-  "python-dateutil >= 2.8.2",
-  "openpyxl >= 3.0.9",
-  "pycryptodomex >= 3.14.1",
-  "requests >= 2.27.1",
+  "threemystic-common >= 0.0.3",
+  "polling2 >= 0.5.0",
   "boto3 >= 1.21.41",
-  "hvac >= 1.0.2",
-  "pyhcl >= 0.4.4",
-  "cryptography >= 38.0.3",
   "typing-extensions >= 4.4.0"
 ]
 dynamic = ["version"]
@@ -46,6 +40,9 @@ dynamic = ["version"]
 
 [project.scripts]
 3mystic_cloud_client = "threemystic_cloud_client.cli:main"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.version]
 path = "threemystic_cloud_client/__version__.py"
@@ -110,7 +107,7 @@ unfixable = [
 ]
 
 [tool.ruff.isort]
-known-first-party = ["3mystic-common"]
+known-first-party = ["3mystic-cloud-client"]
 
 [tool.ruff.flake8-quotes]
 inline-quotes = "single"
@@ -135,12 +132,12 @@ warn_unused_ignores = true
 
 [tool.coverage.run]
 branch = true
-source_pkgs = ["3mystic-common", "tests"]
+source_pkgs = ["3mystic-cloud-client", "tests"]
 omit = [
   "threemystic_cloud_client/__main__.py",
 ]
 
 [tool.coverage.paths]
-3mystic_common = ["threemystic_cloud_client"]
+threemystic_cloud_client = ["threemystic_cloud_client"]
 tests = ["tests", "*/threemystic_cloud_client/tests"]
 

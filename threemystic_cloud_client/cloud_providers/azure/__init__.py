@@ -1,8 +1,8 @@
-from threemystic_cloud_client.base_class.base import base
+from threemystic_cloud_client.cloud_providers.azure.base_class.base import cloud_client_provider_azure_base as base
 
 class cloud_client_azure(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(logger_name= "cloud_client_azure", *args, **kwargs)
+    super().__init__(logger_name= "cloud_client_azure", provider= "azure", *args, **kwargs)
   
   def config(self, *args, **kwargs):
     cli_doc_link = "https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-windows?tabs=azure-cli"
