@@ -31,6 +31,16 @@ class cloud_client_provider_base(base):
   def is_cli_installed(self, *args, **kwargs):
     return self.get_config().get("cli_installed") == True
 
+  def get_aws_poll_login(self, *args, **kwargs):
+    if(self.get_config().get("aws_poll_login") is None):
+      return 120
+    return self.get_config().get("aws_poll_login")
+
+  def get_aws_poll_authenticate(self, *args, **kwargs):
+    if(self.get_config().get("aws_poll_authenticate") is None):
+      return 240
+    return self.get_config().get("aws_poll_authenticate")
+
   def valid_auth_options(self, *args, **kwargs):
     return ["sso"]
 
@@ -38,7 +48,7 @@ class cloud_client_provider_base(base):
     return self.get_common().get_threemystic_config_path().joinpath(f"3mystic_cloud_client_config_{self.get_provider()}")
     
   def get_aws_user_path(self, *args, **kwargs):
-    return "~/.aws"
+    return self.get_common().helper_path().expandpath_user("~/.aws")
   
   def get_aws_user_path_config(self, *args, **kwargs):
     return f"{self.get_aws_user_path()}/config"

@@ -283,7 +283,7 @@ class cloud_client_aws_client_base(base):
       poll(
         lambda: self.is_authenticating_session(),
         ignore_exceptions=(Exception,),
-        timeout=240,
+        timeout=self.get_aws_poll_authenticate(),
         step=0.1
       )
       return self.ensure_session()
