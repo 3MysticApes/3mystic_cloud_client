@@ -21,11 +21,9 @@ class cloud_client_provider_azure_base(base):
         if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") == "name":
           return value
     
-    if hasattr(account, "Name"):
-      return account.Name
-    
-    if hasattr(account, "name"):
-      return account.name
+    for att in dir(account):
+      if self.get_common().helper_type().string().set_case(string_value= att, case= "lower") == "name":
+        return getattr(account, att)
     
     raise self.get_common().exception().exception(
       exception_type = "generic"
@@ -45,12 +43,10 @@ class cloud_client_provider_azure_base(base):
       for key, value in account.items():
         if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") == "id":
           return value
-    
-    if hasattr(account, "id"):
-      return account.id
-    
-    if hasattr(account, "Id"):
-      return account.id
+
+    for att in dir(account):
+      if self.get_common().helper_type().string().set_case(string_value= att, case= "lower") == "id":
+        return getattr(account, att)
     
     raise self.get_common().exception().exception(
       exception_type = "generic"
@@ -63,7 +59,7 @@ class cloud_client_provider_azure_base(base):
   def make_account(self, **kwargs):    
     account = {}
 
-    for key, value in account.items():
+    for key, value in kwargs.items():
       if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") == "id":
         account["Id"] = value
         continue
@@ -73,5 +69,44 @@ class cloud_client_provider_azure_base(base):
         
     
     return account
+  
+  
+  def get_tenant_id(self, tenant):
+    if tenant is None:
+      return None
+    if self.get_common().helper_type().general().is_type(obj= tenant, type_check= str):
+      return tenant
+    
+    tenant_id_options = ["tenantid", "id"]
+    if self.get_common().helper_type().general().is_type(obj= tenant, type_check= dict):
+      for key, value in tenant.items():
+        if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") in tenant_id_options:
+          return value
+
+    for att in dir(tenant):
+      if self.get_common().helper_type().string().set_case(string_value= att, case= "lower") in tenant_id_options:
+        return getattr(tenant, att)
+    
+    raise self.get_common().exception().exception(
+      exception_type = "generic"
+    ).not_implemented(
+      logger = self.logger,
+      name = "tenant",
+      message = f"Unknown tenant object: {tenant}."
+    )
+  
+  def make_tenant(self, **kwargs):    
+    tenant = {}
+
+    for key, value in kwargs.items():
+      if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") == "id":
+        tenant["Id"] = value
+        continue
+      if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") == "name":
+        tenant["Name"] = value
+        continue
+        
+    
+    return tenant
     
 

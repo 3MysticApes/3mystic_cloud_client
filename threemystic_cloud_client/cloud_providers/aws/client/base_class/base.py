@@ -460,23 +460,22 @@ class cloud_client_aws_client_base(base):
   
   def get_accounts(self, account = None, update_accountlist = False, include_suspended = False):
     all_accounts = self._get_accounts(update_accountlist=update_accountlist, include_suspended=include_suspended)
+    if account is None:
+      return all_accounts
+    
     if self.get_common().helper_type().general().is_type(obj= account, type_check= str) and not self.get_common().helper_type().string().is_null_or_whitespace(string_value= account):
       account = [ acct.strip() for acct in account.split(",") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= acct) ]
 
-    if self.get_common().helper_type().general().is_type(obj= account, type_check= list) and not None:
-      search_accounts_accounts = [ acct for acct in account if not self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("ou-") and not self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-") ]
-      search_accounts_ous = [ acct for acct in account if self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("ou-") ]
-      exclude_accounts_ous = [ acct for acct in account if self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-ou-") ]
-      exclude_accounts = [ acct for acct in account if self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-") and not self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-ou-") ]
-      account = list(dict.fromkeys(search_accounts_accounts + self.get_accountids_by_ou(org_ou= search_accounts_ous, exclude_ous= exclude_accounts_ous)))
-
-      return [ acct for acct in all_accounts if f'-{acct["Id"]}' not in exclude_accounts and  self.get_common().helper_type().list().find_item(data= account, filter= lambda item: item == acct["Id"]) is not None ]
-
-    elif account is not None:
+    if not self.get_common().helper_type().general().is_type(obj= account, type_check= list):
       self.get_common().get_logger().warning(f'unknown data type for accounts {type(account)}, when trying to get accounts')
-      return None
+      return all_accounts
 
+    search_accounts_accounts = [ acct for acct in account if not self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("ou-") and not self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-") ]
+    search_accounts_ous = [ acct for acct in account if self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("ou-") ]
+    exclude_accounts_ous = [ acct for acct in account if self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-ou-") ]
+    exclude_accounts = [ acct for acct in account if self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-") and not self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-ou-") ]
+    account = list(dict.fromkeys(search_accounts_accounts + self.get_accountids_by_ou(org_ou= search_accounts_ous, exclude_ous= exclude_accounts_ous)))
 
-    return all_accounts
+    return [ acct for acct in all_accounts if f'-{acct["Id"]}' not in exclude_accounts and  self.get_common().helper_type().list().find_item(data= account, filter= lambda item: item == acct["Id"]) is not None ]
     
     
