@@ -19,7 +19,7 @@ class cloud_client_aws_test_step_1(base):
             "messages":{
               "validation": f"Please enter a valid existing Cloud Client Profile",
             },
-            "conversion": lambda item: self.get_common().helper_type().string().trim(string_value= item).lower(),
+            "conversion": lambda item: self.get_common().helper_type().string().set_case(string_value= self.get_common().helper_type().string().trim(string_value= item), case= "lower"),
             "desc": f"What Cloud Client Profile to load",
             "handler": generate_data_handlers.get_handler(handler= "base"),
             "optional": True,

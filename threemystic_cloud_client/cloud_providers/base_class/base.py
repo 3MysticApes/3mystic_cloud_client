@@ -72,7 +72,7 @@ class cloud_client_provider_base(base):
         continue
       
       return {
-        "profile_name": profile.lower(),
+        "profile_name": self.get_common().helper_type().string().set_case(string_value= profile, case= "lower"),
         "profile_data": profile_data
       }
     
@@ -91,7 +91,7 @@ class cloud_client_provider_base(base):
       self.__config = {}
       return self.get_config(*args, **kwargs)
     
-    self.__config["profiles"] = {profile_name.lower():profile_data for profile_name,profile_data in self.get_config_profiles().items()}
+    self.__config["profiles"] = {self.get_common().helper_type().string().set_case(string_value= profile_name, case= "lower"):profile_data for profile_name,profile_data in self.get_config_profiles().items()}
 
     return self.get_config(*args, **kwargs)
   
@@ -114,7 +114,7 @@ class cloud_client_provider_base(base):
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_name):
       return False
     
-    profile_name = profile_name.lower()
+    profile_name = self.get_common().helper_type().string().set_case(string_value= profile_name, case= "lower")
     for existing_profile_name, profile_data in self.get_config_profiles().items():
       if(existing_profile_name != profile_name):
         continue
