@@ -6,10 +6,10 @@ from polling2 import TimeoutException, poll
     
 class cloud_client_aws_client_sso(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(logger_name= "cloud_client_aws_client_sso", provider= "aws", *args, **kwargs)
+    super().__init__(logger_name= "cloud_client_aws_client_sso", *args, **kwargs)
 
     if(self.get_common().helper_type().string().set_case(string_value= self.get_profile()["profile_data"]["auth_method"], case= "lower") != "sso"):
-      raise self._main_reference.exception().exception(
+      raise self.get_common().exception().exception(
           exception_type = "generic"
         ).type_error(
           logger = self.get_common().get_logger(),
@@ -18,24 +18,16 @@ class cloud_client_aws_client_sso(base):
         )
     
     if(self.get_profile()['profile_data']['use_cli_profile'] and not self._has_aws_sso_config_profile()):
-      raise self._main_reference.exception().exception(
+      raise self.get_common().exception().exception(
         exception_type = "generic"
       ).type_error(
         logger = self.get_common().get_logger(),
         name = f"AWSCLI SSO Profile NOT FOUND",
         message = f"AWSCLI SSO Profile NOT FOUND - Cloud Client Profile: {self.get_profile()['profile_name']}\nPlease run the following command to configure aws cli:\naws configure sso --profile {self.get_profile()['profile_data']['sso_profile_name']}"
       )
-    
-    raise self._main_reference.exception().exception(
-      exception_type = "generic"
-    ).type_error(
-      logger = self.get_common().get_logger(),
-      name = f"NOT Supported",
-      message = f"Cloud Client Profile Not Supported"
-    )
   
-  def __get_aws_cli_config(self, force_update= False, *args, **kwargs):
-    if(hasattr(self, "_aws_config") and (not force_update)):
+  def __get_aws_cli_config(self, refresh= False, *args, **kwargs):
+    if(hasattr(self, "_aws_config") and (not refresh)):
       return self._aws_config
     
     self._aws_config = self.get_common().helper_config().load(
@@ -49,20 +41,20 @@ class cloud_client_aws_client_sso(base):
       delattr(self, "_aws_config")
   
   
-  def _has_aws_sso_config_profile(self, force_update = False, *args, **kwargs):
+  def _has_aws_sso_config_profile(self, refresh = False, *args, **kwargs):
 
-    if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= self.get_profile()['profile_data']['sso_profile_name']) and self.__get_aws_cli_config(force_update= force_update).has_section(f"profile {self.get_profile()['profile_data']['sso_profile_name']}"):
+    if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= self.get_profile()['profile_data']['sso_profile_name']) and self.__get_aws_cli_config(refresh= refresh).has_section(f"profile {self.get_profile()['profile_data']['sso_profile_name']}"):
       return True
     
     return False
   
-  def _get_aws_sso_config_profile(self, force_update = False, *args, **kwargs):
+  def _get_aws_sso_config_profile(self, refresh = False, *args, **kwargs):
     
-    if(hasattr(self, "_aws_config_profile") and (not force_update)):
+    if(hasattr(self, "_aws_config_profile") and (not refresh)):
       return self._aws_config_profile
     
-    if(not self._has_aws_sso_config_profile(force_update= force_update)):
-      raise self._main_reference.exception().exception(
+    if(not self._has_aws_sso_config_profile(refresh= refresh)):
+      raise self.get_common().exception().exception(
         exception_type = "generic"
       ).type_error(
         logger = self.get_common().get_logger(),
@@ -74,34 +66,42 @@ class cloud_client_aws_client_sso(base):
     self.__unset_aws_cli_config()
     return self._get_aws_sso_config_profile(*args, **kwargs)
   
-  def _get_sso_profile_credentials(self, force_update = False, *args, **kwargs):   
-    if(hasattr(self, "_aws_config_profile_credentials") and (not force_update)):
+  def _get_sso_profile_credentials(self, refresh = False, *args, **kwargs):   
+    if(hasattr(self, "_aws_config_profile_credentials") and (not refresh)):
       return self._aws_config_profile_credentials
     
-    cache_key = f'{self._main_reference.encryption().hash(hash_method="sha1").generate_hash(data= self._get_aws_sso_config_profile(force_update= force_update)["sso_start_url"])}.json'    
+    cache_key = f'{self.get_common().encryption().hash(hash_method="sha1").generate_hash(data= self._get_aws_sso_config_profile(refresh= refresh)["sso_start_url"])}.json'    
     
-    ssoTokenFile = self.get_aws_user_path().join('sso', 'cache', cache_key)
+    ssoTokenFile = self.get_aws_user_path().joinpath('sso', 'cache', cache_key)
     
-    if self.get_common().helper_path().is_file(ssoTokenFile):
-      with ssoTokenFile.open(mode="r") as sso_cache:
-        self._aws_config_profile_credentials = self.get_common().helper_json().loads(data= sso_cache.read())
+    if not self.get_common().helper_path().is_file(ssoTokenFile):
+      raise self.get_common().exception().exception(
+        exception_type = "generic"
+      ).type_error(
+        logger = self.get_common().get_logger(),
+        name = f"NOT FOUND",
+        message = f"Token File not found or not valid file: {ssoTokenFile}"
+      )
+      
+    with ssoTokenFile.open(mode="r") as sso_cache:
+      self._aws_config_profile_credentials = self.get_common().helper_json().loads(data= sso_cache.read())
 
   def __internal_load_base_configs_ssoprofile(self, *args, **kwargs):
     self._get_sso_profile_credentials()
 
-  def _get_session_accesstoken(self, force_update = False, *args, **kwargs):
+  def _get_session_accesstoken(self, refresh = False, *args, **kwargs):
     if self.session_expired():
       self.ensure_session()
 
-    if(hasattr(self, "_aws_config_profile_credentials_accesstoken") and (not force_update)):
+    if(hasattr(self, "_aws_config_profile_credentials_accesstoken") and (not refresh)):
       if(not self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._aws_config_profile_credentials_accesstoken) ):
         return self._aws_config_profile_credentials_accesstoken
     
     self._aws_config_profile_credentials_accesstoken = self._get_sso_profile_credentials()["accessToken"]
     return self._get_session_accesstoken()
   
-  def _get_session_expires(self, force_update = False, *args, **kwargs):
-    if(hasattr(self, "_aws_config_profile_credentials_expires") and (not force_update)):
+  def _get_session_expires(self, refresh = False, *args, **kwargs):
+    if(hasattr(self, "_aws_config_profile_credentials_expires") and (not refresh)):
       return self._aws_config_profile_credentials_expires
 
     if(self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._get_sso_profile_credentials()['expiresAt']) ):
@@ -112,9 +112,9 @@ class cloud_client_aws_client_sso(base):
     )
     return self._get_session_expires()
     
-  def _session_expired(self, force_update = False, *args, **kwargs):
+  def _session_expired(self, refresh = False, *args, **kwargs):
     
-    if(self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._get_sso_profile_credentials(force_update= force_update)['expiresAt']) ):
+    if(self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._get_sso_profile_credentials(refresh= refresh)['expiresAt']) ):
       return True
 
     return self.get_common().helper_type().datetime().is_token_expired_now(compare_datetime= self._get_session_expires())
@@ -125,7 +125,7 @@ class cloud_client_aws_client_sso(base):
       self.__aws_sso_login_profile()
       return
     
-    raise self._main_reference.exception().exception(
+    raise self.get_common().exception().exception(
       exception_type = "generic"
     ).type_error(
       logger = self.get_common().get_logger(),
@@ -135,7 +135,7 @@ class cloud_client_aws_client_sso(base):
 
   def __aws_sso_login_profile(self, *args, **kwargs):
     if(not self._has_aws_sso_config_profile()):
-      raise self._main_reference.exception().exception(
+      raise self.get_common().exception().exception(
         exception_type = "generic"
       ).type_error(
         logger = self.get_common().get_logger(),
@@ -145,7 +145,7 @@ class cloud_client_aws_client_sso(base):
     
     ssologin_call = f"aws sso login --profile {self.get_profile()['profile_data']['sso_profile_name']}"
     if os.system(ssologin_call) != 0:
-      raise self._main_reference.exception().exception(
+      raise self.get_common().exception().exception(
         exception_type = "generic"
       ).type_error(
         logger = self.get_common().get_logger(),
@@ -163,7 +163,7 @@ class cloud_client_aws_client_sso(base):
       if logged_in is not None:      
         return logged_in
       
-      raise self._main_reference.exception().exception(
+      raise self.get_common().exception().exception(
           exception_type = "generic"
         ).type_error(
           logger = self.get_common().get_logger(),
@@ -171,7 +171,7 @@ class cloud_client_aws_client_sso(base):
           message = f"Could not authenticate SSO.\nPlease check cli version aws --version and make sure you are using v2 then please run aws sso login --profile {self.get_profile()['profile_data']['sso_profile_name']}"
         )
     except Exception as err:
-      raise self._main_reference.exception().exception(
+      raise self.get_common().exception().exception(
           exception_type = "generic"
         ).type_error(
           logger = self.get_common().get_logger(),
@@ -185,7 +185,7 @@ class cloud_client_aws_client_sso(base):
       self.__internal_load_base_configs_ssoprofile()
       return
     
-    raise self._main_reference.exception().exception(
+    raise self.get_common().exception().exception(
       exception_type = "generic"
     ).type_error(
       logger = self.get_common().get_logger(),
@@ -197,7 +197,7 @@ class cloud_client_aws_client_sso(base):
     if(self.get_profile()['profile_data']['use_cli_profile']):
       return self._get_aws_sso_config_profile()["sso_role_name"]
     
-    raise self._main_reference.exception().exception(
+    raise self.get_common().exception().exception(
       exception_type = "generic"
     ).type_error(
       logger = self.get_common().get_logger(),
@@ -213,7 +213,7 @@ class cloud_client_aws_client_sso(base):
       if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._get_aws_sso_config_profile()["sso_region"]):
         return self._get_aws_sso_config_profile()["sso_region"]
     
-    raise self._main_reference.exception().exception(
+    raise self.get_common().exception().exception(
       exception_type = "generic"
     ).type_error(
       logger = self.get_common().get_logger(),

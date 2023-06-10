@@ -5,12 +5,12 @@ from azure.identity import AzureCliCredential
 
 class cloud_client_azure_client_cli(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(logger_name= "cloud_client_azure_client_sso", provider= "azure", *args, **kwargs)
+    super().__init__(logger_name= "cloud_client_azure_client_sso", *args, **kwargs)
 
   
   def get_tenant_credential(self, tenant_id, *args, **kwargs):
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= tenant_id):
-      raise self._main_reference.exception().exception(
+      raise self.get_common().exception().exception(
         exception_type = "argument"
       ).type_error(
         logger = self.get_common().get_logger(),

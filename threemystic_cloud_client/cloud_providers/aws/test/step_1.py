@@ -4,7 +4,7 @@ from threemystic_common.base_class.generate_data.generate_data_handlers import g
 
 class cloud_client_aws_test_step_1(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(logger_name= "cloud_client_aws_test", provider= "aws", *args, **kwargs)
+    super().__init__(logger_name= "cloud_client_aws_test", *args, **kwargs)
     
 
   def step(self, *args, **kwargs):
@@ -15,7 +15,7 @@ class cloud_client_aws_test_step_1(base):
     response = self.get_common().generate_data().generate(
       generate_data_config = {
         "profile": {
-            "validation": lambda item: self.has_config_profile_name( profile_name= item),
+            "validation": lambda item: self.config_profile_name_exists( profile_name= item),
             "messages":{
               "validation": f"Please enter a valid existing Cloud Client Profile",
             },
@@ -31,11 +31,10 @@ class cloud_client_aws_test_step_1(base):
     if response is None:
       return
 
-    if not self.has_config_profile_name(profile_name= response["profile"].get("formated")):
+    if not self.config_profile_name_exists(profile_name= response["profile"].get("formated")):
       print(f"Profile Not Found: {response['profile'].get('formated')}")
       return
 
-    print(f"Profile Found: {response['profile'].get('formated')}")
     from threemystic_cloud_client.cloud_providers.aws.test.step_2 import cloud_client_aws_test_step_2 as nextstep
     nextstep(init_object = self).step( profile_name= response['profile'].get('formated'))
     

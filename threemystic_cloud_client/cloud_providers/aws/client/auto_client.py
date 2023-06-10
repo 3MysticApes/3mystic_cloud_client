@@ -2,13 +2,13 @@ from threemystic_cloud_client.cloud_providers.aws.base_class.base import cloud_c
 
 class cloud_client_aws_client_auto(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(logger_name= "cloud_client_aws_auto", provider= "aws", *args, **kwargs)
+    super().__init__(logger_name= "cloud_client_aws_auto", *args, **kwargs)
 
     self.__set_profile(*args, **kwargs)
   
   def get_profile(self, *args, **kwargs):
     if(not hasattr(self, "_profile")):
-      raise self._main_reference.exception().exception(
+      raise self.get_common().exception().exception(
           exception_type = "generic"
         ).type_error(
           logger = self.get_common().get_logger(),
@@ -17,7 +17,7 @@ class cloud_client_aws_client_auto(base):
         )
     
     if(self._profile is None):
-      raise self._main_reference.exception().exception(
+      raise self.get_common().exception().exception(
           exception_type = "generic"
         ).type_error(
           logger = self.get_common().get_logger(),
@@ -31,7 +31,7 @@ class cloud_client_aws_client_auto(base):
     if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_name):
       profile_data = self.get_config_profile_name(profile_name= profile_name)
       if profile_data is None:
-        raise self._main_reference.exception().exception(
+        raise self.get_common().exception().exception(
           exception_type = "argument"
         ).type_error(
           logger = self.get_common().get_logger(),

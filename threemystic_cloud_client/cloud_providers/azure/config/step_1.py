@@ -4,7 +4,7 @@ from threemystic_cloud_client.cloud_providers.azure.config.base_class.base impor
 
 class cloud_client_azure_config_step_1(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(logger_name= "cloud_client_azure_config_step_1", provider= "azure", *args, **kwargs)
+    super().__init__(logger_name= "cloud_client_azure_config_step_1", *args, **kwargs)
     
 
   def step(self, *args, **kwargs):

@@ -2,7 +2,7 @@ from threemystic_cloud_client.cloud_providers.azure.base_class.base import cloud
 
 class cloud_client_azure(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(logger_name= "cloud_client_azure", provider= "azure", *args, **kwargs)
+    super().__init__(logger_name= "cloud_client_azure", *args, **kwargs)
   
   def action_config(self, *args, **kwargs): 
     

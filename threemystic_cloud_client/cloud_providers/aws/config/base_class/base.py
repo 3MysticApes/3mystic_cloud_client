@@ -34,7 +34,7 @@ class cloud_client_aws_config_base(base):
      self.config_path().write_text(
       data= self.get_common().helper_yaml().dumps(data= self.get_config())
      )
-     self.get_config(force_update = True)
+     self.get_config(refresh = True)
      
   def step(self, force_cli_installed_prompt = False, *args, **kwargs):
     

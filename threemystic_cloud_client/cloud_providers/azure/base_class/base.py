@@ -10,6 +10,10 @@ class cloud_client_provider_azure_base(base):
       "cli_doc_link": "https://learn.microsoft.com/en-us/cli/azure/install-azure-cli"
     }
 
+  
+  def get_provider(self):
+    return "azure"
+
   def get_account_name(self, account):
     if account is None:
       return None

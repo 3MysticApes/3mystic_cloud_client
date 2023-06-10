@@ -2,10 +2,8 @@ from threemystic_cloud_client.base_class.base import base
 import abc
 
 class cloud_client_provider_base(base):
-  def __init__(self, provider, *args, **kwargs):
+  def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self._provider = provider
-    self.__config = None
 
   @abc.abstractmethod
   def get_account_name(self, account):
@@ -19,14 +17,19 @@ class cloud_client_provider_base(base):
   def make_account(self, account):
     pass  
 
+  @abc.abstractmethod
+  def get_provider(self):
+    pass
+
   def __load_config(self, *args, **kwargs):
-    return self.get_common().helper_config().load(
+    config_data = self.get_common().helper_config().load(
       path= self.config_path(),
       config_type= "yaml"
     )
-  
-  def get_provider(self, *args, **kwargs):
-    return self._provider
+    if config_data is not None:
+      return config_data
+    
+    return {}
 
   def is_cli_installed(self, *args, **kwargs):
     return self.get_config().get("cli_installed") == True
@@ -82,26 +85,21 @@ class cloud_client_provider_base(base):
     
     return self.get_config_profile_name(*args, **kwargs) != None
   
-  def get_config(self, force_update = False, *args, **kwargs):
-    if self.__config is not None and not force_update:
-      return self.__config
-      
-    self.__config = self.__load_config()
-    if(self.__config is None):
-      self.__config = {}
-      return self.get_config(*args, **kwargs)
+  def get_config(self, refresh = False, *args, **kwargs):
+    if hasattr(self, "_config_data") and not refresh:
+      return self._config_data
     
-    self.__config["profiles"] = {self.get_common().helper_type().string().set_case(string_value= profile_name, case= "lower"):profile_data for profile_name,profile_data in self.get_config_profiles().items()}
+    self._config_data = self.__load_config()    
+    self._config_data["profiles"] = {self.get_common().helper_type().string().set_case(string_value= profile_name, case= "lower"):profile_data for profile_name,profile_data in self.get_config_profiles().items()}
 
     return self.get_config(*args, **kwargs)
   
   def has_config_profiles(self, *args, **kwargs):
     
-    profiles = self.get_config().get("profiles")
-    if profiles is None:
+    if self.get_config().get("profiles") is None:
       return False
     
-    return len(profiles) > 0
+    return len(self.get_config().get("profiles")) > 0
 
   def get_config_profiles(self, *args, **kwargs):
     if self.get_config().get("profiles") is not None:
@@ -112,7 +110,7 @@ class cloud_client_provider_base(base):
 
   def get_config_profile_name(self, profile_name = None, *args, **kwargs):
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_name):
-      return False
+      return None
     
     profile_name = self.get_common().helper_type().string().set_case(string_value= profile_name, case= "lower")
     for existing_profile_name, profile_data in self.get_config_profiles().items():
