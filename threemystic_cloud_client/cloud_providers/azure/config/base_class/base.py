@@ -27,6 +27,7 @@ class cloud_client_azure_config_base(base):
       print("The azure cli is required for setup.")
       print()
       print(f"if you need to install the cli you can goto here: {self.links['cli_doc_link']}")
+      print("To ensure your base configuration please run: az configure")
       print()
       print()
       print("-----------------------------")
