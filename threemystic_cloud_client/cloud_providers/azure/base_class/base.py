@@ -11,10 +11,16 @@ class cloud_client_provider_azure_base(base):
     }
 
   
-  def get_provider(self):
+  def get_provider(self, *args, **kwargs):
     return "azure"
 
-  def get_account_name(self, account):
+  def get_tenant_prefix(self, *args, **kwargs):
+    return "/tenants/"
+
+  def get_account_prefix(self, *args, **kwargs):
+    return "/subscriptions/"
+  
+  def get_account_name(self, account, *args, **kwargs):
     if account is None:
       return None
     if self.get_common().helper_type().general().is_type(obj= account, type_check= str):
@@ -37,20 +43,23 @@ class cloud_client_provider_azure_base(base):
       message = f"Unknown account object: {account}."
     )
 
-  def get_account_id(self, account):
+  def get_account_id(self, account, *args, **kwargs):
     if account is None:
       return None
     if self.get_common().helper_type().general().is_type(obj= account, type_check= str):
       return account
     
+    id_options = ["subscriptionid", "id"]
+    
     if self.get_common().helper_type().general().is_type(obj= account, type_check= dict):
       for key, value in account.items():
-        if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") == "id":
-          return value
+        if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") in id_options:
+          return value if not self.get_common().helper_type().string().set_case(string_value= value, case= "lower").startswith(self.get_account_prefix()) else self.get_common().helper_type().string().split(string_value= value, separator= "/")[-1]
 
     for att in dir(account):
-      if self.get_common().helper_type().string().set_case(string_value= att, case= "lower") == "id":
-        return getattr(account, att)
+      if self.get_common().helper_type().string().set_case(string_value= att, case= "lower") in id_options:
+        account_id = getattr(account, att)
+        return account_id if not self.get_common().helper_type().string().set_case(string_value= account_id, case= "lower").startswith(self.get_account_prefix()) else self.get_common().helper_type().string().split(string_value= account_id, separator= "/")[-1]
     
     raise self.get_common().exception().exception(
       exception_type = "generic"
@@ -75,21 +84,23 @@ class cloud_client_provider_azure_base(base):
     return account
   
   
-  def get_tenant_id(self, tenant):
+  def get_tenant_id(self, tenant, *args, **kwargs):
     if tenant is None:
       return None
     if self.get_common().helper_type().general().is_type(obj= tenant, type_check= str):
       return tenant
     
-    tenant_id_options = ["tenantid", "id"]
+    id_options = ["tenantid", "id"]
+    
     if self.get_common().helper_type().general().is_type(obj= tenant, type_check= dict):
       for key, value in tenant.items():
-        if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") in tenant_id_options:
-          return value
+        if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") in id_options:
+          return value if not self.get_common().helper_type().string().set_case(string_value= value, case= "lower").startswith(self.get_tenant_prefix()) else self.get_common().helper_type().string().split(string_value= value, separator= "/")[-1]
 
     for att in dir(tenant):
-      if self.get_common().helper_type().string().set_case(string_value= att, case= "lower") in tenant_id_options:
-        return getattr(tenant, att)
+      if self.get_common().helper_type().string().set_case(string_value= att, case= "lower") in id_options:
+        tenant_id = getattr(tenant, att)
+        return tenant_id if not self.get_common().helper_type().string().set_case(string_value= tenant_id, case= "lower").startswith(self.get_tenant_prefix()) else self.get_common().helper_type().string().split(string_value= tenant_id, separator= "/")[-1]
     
     raise self.get_common().exception().exception(
       exception_type = "generic"

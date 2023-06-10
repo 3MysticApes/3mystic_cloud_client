@@ -6,19 +6,19 @@ class cloud_client_provider_base(base):
     super().__init__(*args, **kwargs)
 
   @abc.abstractmethod
-  def get_account_name(self, account):
+  def get_account_name(self, account, *args, **kwargs):
     pass
 
   @abc.abstractmethod
-  def get_account_id(self, account):
+  def get_account_id(self, account, *args, **kwargs):
     pass
 
   @abc.abstractmethod
-  def make_account(self, account):
+  def make_account(self, account, *args, **kwargs):
     pass  
 
   @abc.abstractmethod
-  def get_provider(self):
+  def get_provider(self, *args, **kwargs):
     pass
 
   def __load_config(self, *args, **kwargs):

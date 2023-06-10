@@ -21,12 +21,45 @@ class cloud_client_azure_client_base(base):
   def get_tenant_credential(self, tenant_id = None, *args, **kwargs):
     pass
   
+  def get_tenants(self, refresh = False, tenant = None, *args, **kwargs):
+    if tenant is None:
+      return self.__get_tenants()
+    
+    if self.get_common().helper_type().general().is_type(obj= tenant, type_check= str) and not self.get_common().helper_type().string().is_null_or_whitespace(string_value= tenant):
+      tenant = [ acct.strip() for acct in self.get_common().helper_type().string().split(string_value= tenant) if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= acct) ]
+    
+    if not self.get_common().helper_type().general().is_type(obj= tenant, type_check= list):
+      self.get_common().get_logger().warning(f'unknown data type for accounts {type(tenant)}, when trying to get tenants')
+      return self.__get_tenants()
+    
+    search_tenants = [ acct for acct in tenant if not self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-") ]
+    exclude_tenants = [ acct for acct in tenant if self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-") ]
+
+    return [ acct for acct in self.__get_tenants() if f'-{self.get_tenant_id(tenant= acct)}' not in exclude_tenants and (len(search_tenants) < 1 or self.get_common().helper_type().list().find_item(data= search_tenants, filter= lambda item: item == self.get_tenant_id(tenant= acct)) is not None) ]
+  
+  def __get_tenants(self, refresh = False, *args, **kwargs):    
+    if hasattr(self, "_tenants") and not refresh:
+      return self._tenants
+    
+    bashCall = "az account tenant list --only-show-errors"
+    return_result = self._az_cli(bashCall, on_login_function = lambda: self.get_tenants(refresh = refresh))
+
+    if len(return_result["error"])>0:
+      if return_result["exit_code"] != 0:
+          raise Exception(return_result["error"])
+      else:
+          logging.warning(msg=return_result["error"])
+
+    self._tenants = return_result["result"]
+    return self.__get_tenants()
+  
+
   def __get_accounts(self, refresh = False, *args, **kwargs):    
     if hasattr(self, "_accounts") and not refresh:
       return self._accounts
     
-    bashCall = "az account list{}".format(" --refresh" if refresh else "")
-    return_result = self.az_cli(bashCall, on_login_function = lambda: self.get_accounts(refresh = refresh))
+    bashCall = "az account list{} --only-show-errors".format(" --refresh" if refresh else "")
+    return_result = self._az_cli(bashCall, on_login_function = lambda: self.get_accounts(refresh = refresh))
 
     if len(return_result["error"])>0:
       if return_result["exit_code"] != 0:
@@ -51,7 +84,7 @@ class cloud_client_azure_client_base(base):
     search_accounts = [ acct for acct in account if not self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-") ]
     exclude_accounts = [ acct for acct in account if self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-") ]
 
-    return [ acct for acct in self.__get_accounts() if f'-{self.get_account_id(account= acct)}' not in exclude_accounts and  self.get_common().helper_type().list().find_item(data= search_accounts, filter= lambda item: item == self.get_account_id(account= acct)) is not None ]
+    return [ acct for acct in self.__get_accounts() if f'-{self.get_account_id(account= acct)}' not in exclude_accounts and  (len(search_accounts) < 1 or self.get_common().helper_type().list().find_item(data= search_accounts, filter= lambda item: item == self.get_account_id(account= acct)) is not None) ]
   
   def _az_cli(self, command, on_login_function = None, *args, **kwargs):
 
@@ -64,7 +97,7 @@ class cloud_client_azure_client_base(base):
     az_cli_handler.setLevel(logging.WARNING)
     
     try:
-      az_cli_args = command.split()
+      az_cli_args = self.get_common().helper_type().string().split(string_value= command, separator="\\s")
 
       if az_cli_args[0].lower() == "az":
         az_cli_args.pop(0)
