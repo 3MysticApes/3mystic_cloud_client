@@ -34,7 +34,7 @@ class cloud_client_aws_config_step_2(base):
               "validation": f"Valid Options: {self.valid_auth_options()}",
             },
             "conversion": lambda item: self.get_common().helper_type().string().trim(string_value= self.get_common().helper_type().string().trim(string_value= self.get_common().helper_type().string().set_case(string_value= item, case= "lower"))) if item is not None else None,
-            "desc": f"Which provider should we configure\nvalid options are {self.valid_auth_options()}",
+            "desc": f"Which provider authentication\nvalid options are {self.valid_auth_options()}",
             "handler": generate_data_handlers.get_handler(handler= "base"),
             "optional": False
           }
