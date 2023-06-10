@@ -15,6 +15,10 @@ class cloud_client_provider_aws_base(base):
       "saml2aws_doc_link": "https://github.com/Versent/saml2aws"
     }
   
+  
+  def get_provider(self):
+    return "aws"
+
   def get_account_name(self, account):
     if account is None:
       return None
@@ -59,20 +63,20 @@ class cloud_client_provider_aws_base(base):
   
   def make_account(self, **kwargs):    
     account = {}
-    if not self.common.isNullOrWhiteSpace(kwargs.get("accountId")):
+    if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= kwargs.get("accountId")):
       self.get_logger().warning("accountId will be depreciated use Id")
       account["accountId"] = kwargs.get("accountId")
       account["Id"] = kwargs.get("accountId")
 
-    if not self.common.isNullOrWhiteSpace(kwargs.get("Id")):
+    if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= kwargs.get("Id")):
       account["Id"] = kwargs.get("Id")
 
-    if not self.common.isNullOrWhiteSpace(kwargs.get("accountName")):
+    if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= kwargs.get("accountName")):
       self.get_logger().warning("accountName will be depreciated use Name")
       account["accountName"] = kwargs.get("accountName")
       account["Name"] = kwargs.get("accoNameuntId")
 
-    if not self.common.isNullOrWhiteSpace(kwargs.get("Name")):
+    if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= kwargs.get("Name")):
       account["Name"] = kwargs.get("Name")
     
     return account

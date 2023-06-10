@@ -26,7 +26,7 @@ class cloud_client_aws_client_base(base):
     return f"{client}-{(self.get_account_id(account))}-{region}" 
   
   def _get_created_boto_clients(self, *args, **kwargs):
-    if(not hasattr(self, "_created_boto_clients")):
+    if(hasattr(self, "_created_boto_clients")):
       return self._created_boto_clients
     
     self._created_boto_clients = {}
@@ -49,7 +49,7 @@ class cloud_client_aws_client_base(base):
       return cached_key
   
   def _get_created_boto_sessions(self, *args, **kwargs):
-    if(not hasattr(self, "_created_boto_sessions")):
+    if(hasattr(self, "_created_boto_sessions")):
       return self._created_boto_sessions
     
     self._created_boto_sessions = {}
@@ -73,16 +73,10 @@ class cloud_client_aws_client_base(base):
     
   def get_profile(self, *args, **kwargs):
     if(not hasattr(self, "_profile")):
-      raise self._main_reference.exception().exception(
-          exception_type = "generic"
-        ).type_error(
-          logger = self.get_common().get_logger(),
-          name = "Cloud Client Profile",
-          message = f"Profile was not set"
-        )
+      self.__set_profile()
     
     if(self._profile is None):
-      raise self._main_reference.exception().exception(
+      raise self.get_common().exception().exception(
           exception_type = "generic"
         ).type_error(
           logger = self.get_common().get_logger(),
@@ -216,7 +210,7 @@ class cloud_client_aws_client_base(base):
             self.get_common().get_logger().exception(
               msg=f"Params:{boto_params} - err: {err}",
               extra= {
-                "main_exception"= err
+                "main_exception": err
               }
             )
 
@@ -413,22 +407,25 @@ class cloud_client_aws_client_base(base):
     self._get_created_boto_sessions()[cache_key] = boto_session(botocore_session= session)
     return self._get_created_boto_sessions[cache_key]
   
-  def _get_accounts(self, update_accountlist = False, include_suspended = False):
+  def _get_accounts(self, refresh = False, include_suspended = False):
     
-    if not self._account_list is None and len(self._account_list) > 0 and not update_accountlist:
-      return self._account_list
+    if hasattr(self, "_account_list") and not refresh:
+      return_list = "active" if not include_suspended else "all"
+      if self._account_list is not None and len(self._account_list) > 0:
+        return self._account_list[return_list]
     
-    self._account_list = self.get_common().general_boto_call_array(
-      boto_call=lambda item: self._get_organization_client().list_accounts(**item),
-      boto_params={},
-      boto_nextkey = "NextToken",
-      boto_key="Accounts"
-    )
+    self._account_list = {
+      "all": self.general_boto_call_array(
+        boto_call=lambda item: self._get_organization_client().list_accounts(**item),
+        boto_params={},
+        boto_nextkey = "NextToken",
+        boto_key="Accounts"
+      )
+    }
     
-    if include_suspended == False:
-      self._account_list = [ acct for acct in self._account_list if self.get_common().helper_type().string().set_case(string_value= acct["Status"], case= "lower") != "suspended" ]
+    self._account_list["acive"] = [ acct for acct in self._account_list if self.get_common().helper_type().string().set_case(string_value= acct["Status"], case= "lower") != "suspended" ]
     
-    return self._account_list 
+    return self._get_accounts(refresh= refresh, include_suspended= include_suspended) 
 
   def get_accountids_by_ou(self, org_ou, exclude_ous = None, **kwargs):
     if org_ou is None:
@@ -458,8 +455,8 @@ class cloud_client_aws_client_base(base):
     
     return list(dict.fromkeys(account_list))
   
-  def get_accounts(self, account = None, update_accountlist = False, include_suspended = False):
-    all_accounts = self._get_accounts(update_accountlist=update_accountlist, include_suspended=include_suspended)
+  def get_accounts(self, account = None, refresh = False, include_suspended = False):
+    all_accounts = self._get_accounts(refresh=refresh, include_suspended=include_suspended)
     if account is None:
       return all_accounts
     
