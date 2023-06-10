@@ -16,7 +16,7 @@ class cloud_client_provider_aws_base(base):
     }
   
   
-  def get_provider(self, *args, **kwargs)::
+  def get_provider(self, *args, **kwargs):
     return "aws"
 
   def get_account_name(self, account):
