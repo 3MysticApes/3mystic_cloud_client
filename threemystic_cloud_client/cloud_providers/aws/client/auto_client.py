@@ -48,7 +48,7 @@ class cloud_client_aws_client_auto(base):
     self._profile = self.get_default_profile()
 
   def get_client(self, *args, **kwargs):
-    if self.get_profile()["profile_data"]["auth_method"].lower() == "sso":
+    if self.get_common().helper_type().string().set_case(string_value= self.get_profile()["profile_data"]["auth_method"], case= "lower") == "sso":
       from threemystic_cloud_client.cloud_providers.aws.client.sso import cloud_client_aws_client_sso as client
       return client(profile_data= self.get_profile())
   

@@ -8,7 +8,7 @@ class cloud_client_aws_client_sso(base):
   def __init__(self, *args, **kwargs):
     super().__init__(logger_name= "cloud_client_aws_client_sso", provider= "aws", *args, **kwargs)
 
-    if(self.get_profile()["auth_method"].lower() != "sso"):
+    if(self.get_common().helper_type().string().set_case(string_value= self.get_profile()["profile_data"]["auth_method"], case= "lower") != "sso"):
       raise self._main_reference.exception().exception(
           exception_type = "generic"
         ).type_error(
@@ -80,7 +80,7 @@ class cloud_client_aws_client_sso(base):
     
     cache_key = f'{self._main_reference.encryption().hash(hash_method="sha1").generate_hash(data= self._get_aws_sso_config_profile(force_update= force_update)["sso_start_url"])}.json'    
     
-    ssoTokenFile = self.get_common().helper_path().expandpath_user(path= "~/aws").join('sso', 'cache', cache_key)
+    ssoTokenFile = self.get_aws_user_path().join('sso', 'cache', cache_key)
     
     if self.get_common().helper_path().is_file(ssoTokenFile):
       with ssoTokenFile.open(mode="r") as sso_cache:
@@ -157,7 +157,7 @@ class cloud_client_aws_client_sso(base):
       logged_in = poll(
         lambda: not self.session_expired(refresh = True),
         ignore_exceptions=(Exception,),
-        timeout=120,
+        timeout=self.get_aws_poll_login(),
         step=0.1
       )
       if logged_in is not None:      

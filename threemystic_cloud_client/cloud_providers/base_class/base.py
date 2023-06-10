@@ -31,6 +31,16 @@ class cloud_client_provider_base(base):
   def is_cli_installed(self, *args, **kwargs):
     return self.get_config().get("cli_installed") == True
 
+  def get_aws_poll_login(self, *args, **kwargs):
+    if(self.get_config().get("aws_poll_login") is None):
+      return 120
+    return self.get_config().get("aws_poll_login")
+
+  def get_aws_poll_authenticate(self, *args, **kwargs):
+    if(self.get_config().get("aws_poll_authenticate") is None):
+      return 240
+    return self.get_config().get("aws_poll_authenticate")
+
   def valid_auth_options(self, *args, **kwargs):
     return ["sso"]
 
@@ -38,7 +48,7 @@ class cloud_client_provider_base(base):
     return self.get_common().get_threemystic_config_path().joinpath(f"3mystic_cloud_client_config_{self.get_provider()}")
     
   def get_aws_user_path(self, *args, **kwargs):
-    return "~/.aws"
+    return self.get_common().helper_path().expandpath_user("~/.aws")
   
   def get_aws_user_path_config(self, *args, **kwargs):
     return f"{self.get_aws_user_path()}/config"
@@ -62,7 +72,7 @@ class cloud_client_provider_base(base):
         continue
       
       return {
-        "profile_name": profile.lower(),
+        "profile_name": self.get_common().helper_type().string().set_case(string_value= profile, case= "lower"),
         "profile_data": profile_data
       }
     
@@ -81,7 +91,7 @@ class cloud_client_provider_base(base):
       self.__config = {}
       return self.get_config(*args, **kwargs)
     
-    self.__config["profiles"] = {profile_name.lower():profile_data for profile_name,profile_data in self.get_config_profiles().items()}
+    self.__config["profiles"] = {self.get_common().helper_type().string().set_case(string_value= profile_name, case= "lower"):profile_data for profile_name,profile_data in self.get_config_profiles().items()}
 
     return self.get_config(*args, **kwargs)
   
@@ -104,7 +114,7 @@ class cloud_client_provider_base(base):
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_name):
       return False
     
-    profile_name = profile_name.lower()
+    profile_name = self.get_common().helper_type().string().set_case(string_value= profile_name, case= "lower")
     for existing_profile_name, profile_data in self.get_config_profiles().items():
       if(existing_profile_name != profile_name):
         continue

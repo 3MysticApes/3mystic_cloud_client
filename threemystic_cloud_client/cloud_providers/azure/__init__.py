@@ -4,12 +4,14 @@ class cloud_client_azure(base):
   def __init__(self, *args, **kwargs):
     super().__init__(logger_name= "cloud_client_azure", provider= "azure", *args, **kwargs)
   
-  def config(self, *args, **kwargs):
-    cli_doc_link = "https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-windows?tabs=azure-cli"
+  def action_config(self, *args, **kwargs): 
+    
+    from threemystic_cloud_client.cloud_providers.azure.config.step_1 import cloud_client_azure_config_step_1 as step
+    next_step = step(common= self.get_common(), logger= self.get_logger())
+    
+    next_step.step()
 
-    print("Currently this app integrates directly with the azure cli. If you  have not configured the azure cli plus do so now.")
-    print()
-    print(f"if you need to install the cli you can goto here: {cli_doc_link}")
+
     
     
   

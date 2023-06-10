@@ -27,7 +27,7 @@ class cloud_client_config_base():
       }
     )
     
-    provider = self.__get_provider(response).lower()
+    provider = self._cloud_client.get_common().helper_type().string().set_case(string_value= self.__get_provider(response), case= "lower")
     if provider not in self._cloud_client.get_supported_providers():
       return
     
