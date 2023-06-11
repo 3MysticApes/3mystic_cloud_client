@@ -58,26 +58,28 @@ class cloud_client_cli(base_process_options):
       parser = self.parser
     )
 
-    self._client_action = processed_info["processed_data"].get("client_action")
+    for key, value in processed_info["processed_data"].items():
+      setattr(self, f"_{key}", value)
     
     
   def process_client_action(self, *args, **kwargs):
-    if self._client_action == "version":
+    if self.__get_client_acount() == "version":
       self.version_dispaly()
       return
     
-    if  self._client_action == "config":
+    if  self.__get_client_acount() == "config":
       from threemystic_cloud_client.cli.actions.config import cloud_client_config as user_action
       user_action(cloud_client= self._cloud_client).main(provider= self._client_provider)
       return
 
-    if  self._client_action == "test":
+    if  self.__get_client_acount() == "test":
       from threemystic_cloud_client.cli.actions.test import cloud_client_test as user_action
       user_action(cloud_client= self._cloud_client).main(provider= self._client_provider)
       return
 
-    if  self._client_action == "token":
-      print("pending")
+    if  self.__get_client_acount() == "token":
+      from threemystic_cloud_client.cli.actions.token import cloud_client_token as user_action
+      user_action(cloud_client= self._cloud_client).main(provider= self._client_provider)
       return
 
     return
@@ -88,8 +90,13 @@ class cloud_client_cli(base_process_options):
     print(f"3mystic_common: v{self._cloud_client.get_common().version()}")
     print()
 
+  def __get_client_acount(self, *args, **kwargs):
+    if not hasattr(self, "_client_action"):
+      return None
+    
+    return self._client_action
   def main(self, *args, **kwargs):    
-    if self._client_action is None:
+    if self.__get_client_acount() is None:
       print(f"Thank you for using the 3 Mystic Apes Cloud Client.")
       self.version_dispaly()
       print()
