@@ -11,7 +11,7 @@ class cloud_client_config_base():
       self._cloud_client = cloud_client()
 
   def main(self, provider = None, *args, **kwargs):
-    if self.get_common().helper_type().string().is_null_or_whitespace(string_value= provider):
+    if self._cloud_client.get_common().helper_type().string().is_null_or_whitespace(string_value= provider):
       response = self._cloud_client.get_common().generate_data().generate(
         generate_data_config = {
           "provider": {

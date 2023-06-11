@@ -127,6 +127,9 @@ class cloud_client_provider_base(base):
   
   def action_test(self, *args, **kwargs):
     print("Provider test config not configured")
+  
+  def action_token(self, *args, **kwargs):
+    print("Provider token config not configured")
 
     
 
