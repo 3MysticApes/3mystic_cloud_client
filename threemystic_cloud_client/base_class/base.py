@@ -19,5 +19,8 @@ class base(main_base):
   def _post_init(self, *args, **kwargs):
     pass
   
+  def get_main_directory_name(self, *args, **kwargs):
+    return "client"
+  
 
   
