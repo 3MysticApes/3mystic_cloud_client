@@ -15,7 +15,6 @@ class cloud_client_provider_aws_base(base):
       "saml2aws_doc_link": "https://github.com/Versent/saml2aws"
     }
   
-  
   def get_provider(self, *args, **kwargs):
     return "aws"
 
