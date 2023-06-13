@@ -1,5 +1,6 @@
 # 3mystic_cloud_client
-A set of common files that are used for the various projects under 3 Mystic Apes
+A tool to help uniform the connection to the cloud providers.
+Currently supports AWS/Azure
 
 # Install
 

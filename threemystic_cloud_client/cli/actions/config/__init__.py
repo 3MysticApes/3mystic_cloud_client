@@ -1,4 +1,4 @@
-from threemystic_cloud_client.cli.actions.base_class.base import cloud_client_config_base as base
+from threemystic_cloud_client.cli.actions.base_class.base import cloud_client_action_base as base
 
 
 class cloud_client_config(base):

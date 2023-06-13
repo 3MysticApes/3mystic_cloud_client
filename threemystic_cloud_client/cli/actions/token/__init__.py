@@ -1,4 +1,4 @@
-from threemystic_cloud_client.cli.actions.base_class.base import cloud_client_config_base as base
+from threemystic_cloud_client.cli.actions.base_class.base import cloud_client_action_base as base
 from threemystic_common.base_class.base_script_options import base_process_options
 import textwrap, argparse
 
