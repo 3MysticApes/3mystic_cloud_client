@@ -62,22 +62,24 @@ class cloud_client_cli(base_process_options):
       setattr(self, f"_{key}", value)
     
     
-  def process_client_action(self, *args, **kwargs):
-    if self.__get_client_acount() == "version":
+  def process_client_action(self, force_action = None, *args, **kwargs):
+    if self._cloud_client.get_common().helper_type().string().is_null_or_whitespace(string_value= force_action):
+      force_action = self.__get_client_acount()
+    if force_action == "version":
       self.version_dispaly()
       return
     
-    if  self.__get_client_acount() == "config":
+    if force_action == "config":
       from threemystic_cloud_client.cli.actions.config import cloud_client_config as user_action
       user_action(cloud_client= self._cloud_client).main(provider= self._client_provider)
       return
 
-    if  self.__get_client_acount() == "test":
+    if force_action == "test":
       from threemystic_cloud_client.cli.actions.test import cloud_client_test as user_action
       user_action(cloud_client= self._cloud_client).main(provider= self._client_provider)
       return
 
-    if  self.__get_client_acount() == "token":
+    if force_action == "token":
       from threemystic_cloud_client.cli.actions.token import cloud_client_token as user_action
       user_action(cloud_client= self._cloud_client).main(provider= self._client_provider)
       return

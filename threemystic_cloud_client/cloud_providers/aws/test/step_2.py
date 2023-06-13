@@ -11,8 +11,12 @@ class cloud_client_aws_test_step_2(base):
     if not super().step(*args, **kwargs):
       return
     
-    from threemystic_cloud_client.cloud_providers.aws.client.auto_client import cloud_client_aws_client_auto as auto_client
-    aws_client = auto_client(profile_name= profile_name).get_client()
+    from threemystic_cloud_client.cloud_client import cloud_client
+    aws_client = cloud_client(logger= self.get_logger(), common=self.get_common()).client(
+      provider= "aws",
+      profile_name= profile_name
+    )
+
     
     print(f"Connected to Account ID: {aws_client.get_main_account_id()}")
     print(f"Org Account ID: {aws_client.get_organization_account_id()}")

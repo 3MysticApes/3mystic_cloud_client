@@ -47,6 +47,8 @@ class cloud_client_aws_config_base(base):
       print("-----------------------------")
       
       self.update_is_cli_installed(is_cli_installed= self._is_aws_installed())
+      print("cli state updated")
+      print("-----------------------------")
       
       if self.is_cli_installed() != True:
         print("Please install the aws cli, if its not already installed.")

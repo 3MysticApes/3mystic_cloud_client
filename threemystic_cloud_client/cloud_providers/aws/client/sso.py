@@ -150,7 +150,7 @@ class cloud_client_aws_client_sso(base):
       ).type_error(
         logger = self.get_common().get_logger(),
         name = f"NOT AUTHENTICATED",
-        message = f"Cloud Client Profile could not authenticate SSO PRofile"
+        message = f"Cloud Client Profile could not authenticate SSO Profile"
       )
 
     try:

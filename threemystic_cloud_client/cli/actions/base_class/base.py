@@ -9,6 +9,9 @@ class cloud_client_action_base():
     if self._cloud_client is None:
       from threemystic_cloud_client.cloud_client import cloud_client
       self._cloud_client = cloud_client()
+    
+    
+    
 
   def main(self, provider = None, *args, **kwargs):
     if self._cloud_client.get_common().helper_type().string().is_null_or_whitespace(string_value= provider):

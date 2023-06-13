@@ -269,9 +269,18 @@ class cloud_client_aws_client_base(base):
   def session_expired(self, *args, **kwargs):
     return self._session_expired(*args, **kwargs)
   
-  def ensure_session(self, *args, **kwargs):
+  def ensure_session(self, count = 0, *args, **kwargs):
     if(not self.session_expired()):
       return
+    
+    if count > 5:
+      raise self.get_common().exception().exception(
+        exception_type = "generic"
+      ).type_error(
+        logger = self.get_common().get_logger(),
+        name = "NOT AUTHENTICATED",
+        message = f"Error waiting for authentication"
+      )
     
     if(self.is_authenticating_session()):
       poll(
@@ -280,7 +289,7 @@ class cloud_client_aws_client_base(base):
         timeout=self.get_aws_poll_authenticate(),
         step=0.1
       )
-      return self.ensure_session()
+      return self.ensure_session(count= count+1)
       
     self._set_authenticating_session(is_authenticating_session= True)
 
