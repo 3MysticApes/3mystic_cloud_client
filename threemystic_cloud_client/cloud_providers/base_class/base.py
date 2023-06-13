@@ -53,7 +53,7 @@ class cloud_client_provider_base(base):
     return ["sso"]
 
   def config_path(self, *args, **kwargs):
-    return self.get_common().get_threemystic_directory_config().joinpath(f"{self.get_main_directory_name()}/3mystic_cloud_client_config_{self.get_provider()}")
+    return self.get_common().get_threemystic_directory_config().joinpath(f"{self.get_main_directory_name()}/config_{self.get_provider()}")
     
   def get_aws_user_path(self, *args, **kwargs):
     return self.get_common().helper_path().expandpath_user("~/.aws")
