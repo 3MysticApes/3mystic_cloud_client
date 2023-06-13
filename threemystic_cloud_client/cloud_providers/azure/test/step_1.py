@@ -11,9 +11,10 @@ class cloud_client_azure_test_step_1(base):
     if not super().step( *args, **kwargs):
       return
     
-    
-    from threemystic_cloud_client.cloud_providers.azure.client.auto_client import cloud_client_azure_client_auto as auto_client
-    azure_client = auto_client().get_client()
+    from threemystic_cloud_client.cloud_client import cloud_client
+    azure_client = cloud_client(logger= self.get_logger(), common=self.get_common()).client(
+      provider= "azure"
+    )
     
     print(f"You have the following tenants:")
     for tenant in azure_client.get_tenants():

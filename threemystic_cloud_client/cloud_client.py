@@ -22,7 +22,7 @@ class cloud_client(base):
 
     if provider not in self.get_supported_providers():
       raise self.get_common().exception(
-        exception_type = "generic"
+        exception_type = "argument"
       ).not_implemented(
         logger = self.logger,
         name = "provider",
@@ -38,28 +38,38 @@ class cloud_client(base):
     if provider == "azure":
       from threemystic_cloud_client.cloud_providers.azure.client.auto_client import cloud_client_azure_client_auto as client
       self._client[provider] = client(
-        common= self.get_common()
-      )
+        common= self.get_common(), *args, **kwargs
+      ).get_client()
       return
     
     if provider == "aws":
       from threemystic_cloud_client.cloud_providers.aws.client.auto_client import cloud_client_aws_client_auto as client
       self._client[provider] = client(
-        common= self.get_common()
-      )
-      return
-
-  def client(self, provider, *args, **kwargs):
-    provider = self.get_common().helper_type().string().set_case(string_value= provider, case= "lower") if provider is not None else ""
-
-    if hasattr(self, "_client"):
-      if self._client.get(provider) is not None:
-        return self._client[provider]
-   
+        common= self.get_common(), *args, **kwargs
+      ).get_client()
+      return  
+       
     raise self.get_common().exception().exception(
-      exception_type = "generic"
+      exception_type = "argument"
     ).not_implemented(
       logger = self.logger,
       name = "provider",
       message = f"Unknown Cloud Provided: {provider}.\nSupported Cloud Providers{self.get_supported_providers()}"
     )
+
+  def client(self, provider, *args, **kwargs):
+    if self.get_common().helper_type().string().is_null_or_whitespace(string_value= provider):
+      raise self.get_common().exception().exception(
+        exception_type = "argument"
+      ).not_implemented(
+        logger = self.logger,
+        name = "provider",
+        message = f"provider cannot be null or whitespace"
+      )
+  
+    provider = self.get_common().helper_type().string().set_case(string_value= provider, case= "lower")
+    if not hasattr(self, "_client"):
+      self.init_client(provider= provider,  *args, **kwargs)
+      return self.client(provider= provider, *args, **kwargs)
+    
+    return self._client.get(provider)
