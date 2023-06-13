@@ -1,9 +1,18 @@
-from threemystic_cloud_client.base_class.base import base
+from threemystic_common.base_class.base_provider import base
 import abc
 
 class cloud_client_provider_base(base):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
+    
+    self._post_init(*args, **kwargs)
+
+  
+  def _post_init(self, *args, **kwargs):
+    pass
+  
+  def get_main_directory_name(self, *args, **kwargs):
+    return "client"
 
   @abc.abstractmethod
   def get_account_name(self, account, *args, **kwargs):
@@ -16,10 +25,6 @@ class cloud_client_provider_base(base):
   @abc.abstractmethod
   def make_account(self, account, *args, **kwargs):
     pass  
-
-  @abc.abstractmethod
-  def get_provider(self, *args, **kwargs):
-    pass
 
   def __load_config(self, *args, **kwargs):
     config_data = self.get_common().helper_config().load(

@@ -4,15 +4,11 @@ from threemystic_cloud_client.cloud_providers.base_class.base import cloud_clien
 
 class cloud_client_provider_azure_base(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
+    super().__init__(provider= "azure", *args, **kwargs)
 
     self.links = {
       "cli_doc_link": "https://learn.microsoft.com/en-us/cli/azure/install-azure-cli"
     }
-
-  
-  def get_provider(self, *args, **kwargs):
-    return "azure"
 
   def get_tenant_prefix(self, *args, **kwargs):
     return "/tenants/"

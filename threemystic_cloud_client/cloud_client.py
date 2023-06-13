@@ -1,11 +1,11 @@
-from threemystic_cloud_client.base_class.base import base
+from threemystic_common.base_class.base_provider import base
 
 
 class cloud_client(base): 
   """This is a library to help with the interaction with the cloud providers"""
 
   def __init__(self, logger = None, common = None, *args, **kwargs) -> None: 
-    super().__init__(common= common, logger_name= "cloud_client", logger= logger, *args, **kwargs)
+    super().__init__(provider= "", common= common, logger_name= "cloud_client", logger= logger, *args, **kwargs)
     
   def version(self, *args, **kwargs):
     if hasattr(self, "_version"):
@@ -15,7 +15,7 @@ class cloud_client(base):
     return self.version()
     
   def get_supported_providers(self, *args, **kwargs):
-    return ["aws", "azure"]
+    return super().get_supported_providers()
 
   def init_client(self, provider, *args, **kwargs):
     provider = self.get_common().helper_type().string().set_case(string_value= provider, case= "lower") if provider is not None else ""
