@@ -43,19 +43,19 @@ class cloud_client_provider_azure_base(base):
     if account is None:
       return None
     if self.get_common().helper_type().general().is_type(obj= account, type_check= str):
-      return account
+      return self.get_common().helper_type().string().set_case(string_value= account, case= "lower")
     
     id_options = ["subscriptionid", "id"]
     
     if self.get_common().helper_type().general().is_type(obj= account, type_check= dict):
       for key, value in account.items():
         if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") in id_options:
-          return value if not self.get_common().helper_type().string().set_case(string_value= value, case= "lower").startswith(self.get_account_prefix()) else self.get_common().helper_type().string().split(string_value= value, separator= "/")[-1]
+          return self.get_common().helper_type().string().set_case(string_value= value, case= "lower") if not self.get_common().helper_type().string().set_case(string_value= value, case= "lower").startswith(self.get_account_prefix()) else self.get_common().helper_type().string().split(string_value= value, separator= "/")[-1]
 
     for att in dir(account):
       if self.get_common().helper_type().string().set_case(string_value= att, case= "lower") in id_options:
         account_id = getattr(account, att)
-        return account_id if not self.get_common().helper_type().string().set_case(string_value= account_id, case= "lower").startswith(self.get_account_prefix()) else self.get_common().helper_type().string().split(string_value= account_id, separator= "/")[-1]
+        return self.get_common().helper_type().string().set_case(string_value= account_id, case= "lower") if not self.get_common().helper_type().string().set_case(string_value= account_id, case= "lower").startswith(self.get_account_prefix()) else self.get_common().helper_type().string().split(string_value= account_id, separator= "/")[-1]
     
     raise self.get_common().exception().exception(
       exception_type = "generic"
@@ -70,7 +70,7 @@ class cloud_client_provider_azure_base(base):
 
     for key, value in kwargs.items():
       if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") == "id":
-        account["Id"] = value
+        account["Id"] = self.get_common().helper_type().string().set_case(string_value= value, case= "lower")
         continue
       if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") == "name":
         account["Name"] = value
@@ -84,19 +84,19 @@ class cloud_client_provider_azure_base(base):
     if tenant is None:
       return None
     if self.get_common().helper_type().general().is_type(obj= tenant, type_check= str):
-      return tenant
+      return self.get_common().helper_type().string().set_case(string_value= tenant, case= "lower")
     
     id_options = ["tenantid", "id"]
     
     if self.get_common().helper_type().general().is_type(obj= tenant, type_check= dict):
       for key, value in tenant.items():
         if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") in id_options:
-          return value if not self.get_common().helper_type().string().set_case(string_value= value, case= "lower").startswith(self.get_tenant_prefix()) else self.get_common().helper_type().string().split(string_value= value, separator= "/")[-1]
+          return self.get_common().helper_type().string().set_case(string_value= value, case= "lower") if not self.get_common().helper_type().string().set_case(string_value= value, case= "lower").startswith(self.get_tenant_prefix()) else self.get_common().helper_type().string().split(string_value= value, separator= "/")[-1]
 
     for att in dir(tenant):
       if self.get_common().helper_type().string().set_case(string_value= att, case= "lower") in id_options:
         tenant_id = getattr(tenant, att)
-        return tenant_id if not self.get_common().helper_type().string().set_case(string_value= tenant_id, case= "lower").startswith(self.get_tenant_prefix()) else self.get_common().helper_type().string().split(string_value= tenant_id, separator= "/")[-1]
+        return self.get_common().helper_type().string().set_case(string_value= tenant_id, case= "lower") if not self.get_common().helper_type().string().set_case(string_value= tenant_id, case= "lower").startswith(self.get_tenant_prefix()) else self.get_common().helper_type().string().split(string_value= tenant_id, separator= "/")[-1]
     
     raise self.get_common().exception().exception(
       exception_type = "generic"
@@ -111,8 +111,9 @@ class cloud_client_provider_azure_base(base):
 
     for key, value in kwargs.items():
       if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") == "id":
-        tenant["Id"] = value
+        tenant["Id"] = self.get_common().helper_type().string().set_case(string_value= value, case= "lower")
         continue
+      
       if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") == "name":
         tenant["Name"] = value
         continue
