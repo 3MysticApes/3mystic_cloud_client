@@ -86,6 +86,29 @@ class cloud_client_azure_client_base(base):
 
     return [ acct for acct in self.__get_accounts() if f'-{self.get_account_id(account= acct)}' not in exclude_accounts and  (len(search_accounts) < 1 or self.get_common().helper_type().list().find_item(data= search_accounts, filter= lambda item: item == self.get_account_id(account= acct)) is not None) ]
   
+  # def get_subscriptions(self, tenant = None, refresh = False):      
+  #   if self._subscriptions is None or refresh is True:
+  #     self.get_accounts(refresh = True)
+    
+  #   if self._subscriptions is None or refresh:
+  #     self._load_subscriptions(refresh= True)
+
+  #   if tenant is None:
+  #     all_subscriptions = []
+  #     for _, subscriptions in self._subscriptions.items():
+  #       all_subscriptions += subscriptions
+      
+  #     return all_subscriptions
+
+  #   if self._subscriptions.get(tenant["tenantId"]) is None:
+  #     tenants = self.get_tenants(refresh= refresh)
+  #     if common.FindListItem(tenants, lambda item: item["tenantId"] == tenant["tenantId"]) is None:
+  #       raise Exception("Tenant not Found")
+      
+  #     return self._subscriptions.get(tenant["tenantId"])    
+
+  #   return self._subscriptions[tenant["tenantId"]]
+  
   def _az_cli(self, command, on_login_function = None, *args, **kwargs):
 
     az_cli = get_default_cli()

@@ -17,6 +17,18 @@ class cloud_client(base):
   def get_supported_providers(self, *args, **kwargs):
     return super().get_supported_providers()
 
+  def __set_provider_azure(self, provider, *args, **kwargs):
+    from threemystic_cloud_client.cloud_providers.azure.client.auto_client import cloud_client_azure_client_auto as client
+    self._client[provider] = client(
+      common= self.get_common(), *args, **kwargs
+    ).get_client()
+  
+  def __set_provider_aws(self, provider, *args, **kwargs):
+    from threemystic_cloud_client.cloud_providers.aws.client.auto_client import cloud_client_aws_client_auto as client
+    self._client[provider] = client(
+      common= self.get_common(), *args, **kwargs
+    ).get_client()
+
   def init_client(self, provider, *args, **kwargs):
     provider = self.get_common().helper_type().string().set_case(string_value= provider, case= "lower") if provider is not None else ""
 
@@ -36,17 +48,11 @@ class cloud_client(base):
       return
 
     if provider == "azure":
-      from threemystic_cloud_client.cloud_providers.azure.client.auto_client import cloud_client_azure_client_auto as client
-      self._client[provider] = client(
-        common= self.get_common(), *args, **kwargs
-      ).get_client()
+      self.__set_provider_azure(provider= provider)
       return
     
     if provider == "aws":
-      from threemystic_cloud_client.cloud_providers.aws.client.auto_client import cloud_client_aws_client_auto as client
-      self._client[provider] = client(
-        common= self.get_common(), *args, **kwargs
-      ).get_client()
+      self.__set_provider_aws(provider= provider)
       return  
        
     raise self.get_common().exception().exception(
