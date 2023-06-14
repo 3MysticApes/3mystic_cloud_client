@@ -470,18 +470,18 @@ class cloud_client_aws_client_base(base):
       return all_accounts
     
     if self.get_common().helper_type().general().is_type(obj= account, type_check= str) and not self.get_common().helper_type().string().is_null_or_whitespace(string_value= account):
-      account = [ acct.strip() for acct in self.get_common().helper_type().string().split(string_value= account) if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= acct) ]
+      account = [ self.get_account_id(account= acct) for acct in self.get_common().helper_type().string().split(string_value= account) if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= acct) ]
 
     if not self.get_common().helper_type().general().is_type(obj= account, type_check= list):
       self.get_common().get_logger().warning(f'unknown data type for accounts {type(account)}, when trying to get accounts')
       return all_accounts
 
-    search_accounts = [ acct for acct in account if not self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("ou-") and not self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-") ]
-    search_accounts_ous = [ acct for acct in account if self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("ou-") ]
-    exclude_accounts_ous = [ acct for acct in account if self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-ou-") ]
-    exclude_accounts = [ acct for acct in account if self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-") and not self.get_common().helper_type().string().set_case(string_value= acct, case= "lower").startswith("-ou-") ]
+    search_accounts = [ self.get_account_id(account= acct) for acct in account if not self.get_account_id(account= acct) .startswith("ou-") and not self.get_account_id(account= acct) .startswith("-") ]
+    search_accounts_ous = [ self.get_account_id(account= acct)  for acct in account if self.get_account_id(account= acct) .startswith("ou-") ]
+    exclude_accounts_ous = [ self.get_account_id(account= acct)  for acct in account if self.get_account_id(account= acct) .startswith("-ou-") ]
+    exclude_accounts = [ self.get_account_id(account= acct)  for acct in account if self.get_account_id(account= acct).startswith("-") and not self.get_account_id(account= acct).startswith("-ou-") ]
     account = list(dict.fromkeys(search_accounts + self.get_accountids_by_ou(org_ou= search_accounts_ous, exclude_ous= exclude_accounts_ous)))
 
-    return [ acct for acct in all_accounts if f'-{acct["Id"]}' not in exclude_accounts and  (len(account) < 1 or self.get_common().helper_type().list().find_item(data= account, filter= lambda item: item == acct["Id"]) is not None) ]
+    return [ acct for acct in all_accounts if f'-{self.get_account_id(account= acct) }' not in exclude_accounts and  (len(account) < 1 or self.get_common().helper_type().list().find_item(data= account, filter= lambda item: self.get_account_id(account= item)  == self.get_account_id(account= acct)) is not None) ]
     
     

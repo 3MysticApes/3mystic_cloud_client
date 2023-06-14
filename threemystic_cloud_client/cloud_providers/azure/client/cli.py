@@ -7,7 +7,15 @@ class cloud_client_azure_client_cli(base):
   def __init__(self, *args, **kwargs):
     super().__init__(logger_name= "cloud_client_azure_client_sso", *args, **kwargs)
 
-  
+  def login(self, on_login_function = None, tenant = None, *args, **kwargs):
+ 
+    tenant_id = f' --tenant {self.get_tenant_id(tenant= tenant)}' if tenant is not None else ""
+
+    self._az_cli(
+      command= f"az login{tenant_id} --allow-no-subscriptions",
+      on_login_function = on_login_function
+    )
+        
   def get_tenant_credential(self, tenant, *args, **kwargs):
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= self.get_tenant_id(tenant= tenant)):
       raise self.get_common().exception().exception(
