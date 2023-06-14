@@ -99,6 +99,14 @@ class cloud_client_provider_base(base):
 
     return self.get_config(*args, **kwargs)
   
+  def _save_config(self, *args, **kwargs):
+     if not self.config_path().parent.exists():
+       self.config_path().mkdir(parents= True)
+     self.config_path().write_text(
+      data= self.get_common().helper_yaml().dumps(data= self.get_config())
+     )
+     self.get_config(refresh = True)
+
   def has_config_profiles(self, *args, **kwargs):
     
     if self.get_config().get("profiles") is None:

@@ -13,13 +13,7 @@ class cloud_client_azure_config_base(base):
     
     config["cli_installed"] = is_cli_installed
 
-    self.save_config()
-
-  def save_config(self, *args, **kwargs):
-     self.config_path().write_text(
-      data= self.get_common().helper_yaml().dumps(data= self.get_config())
-     )
-     self.get_config(refresh = True)
+    self._save_config()
      
   def step(self, force_cli_installed_prompt = False, *args, **kwargs):
     
