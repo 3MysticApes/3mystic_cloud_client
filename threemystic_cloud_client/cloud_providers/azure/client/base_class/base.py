@@ -86,6 +86,34 @@ class cloud_client_azure_client_base(base):
 
     return [ acct for acct in self.__get_accounts() if f'-{self.get_account_id(account= acct)}' not in exclude_accounts and  (len(search_accounts) < 1 or self.get_common().helper_type().list().find_item(data= search_accounts, filter= lambda item: item == self.get_account_id(account= acct)) is not None) ]
   
+  def _load_subscriptions(self, refresh = False):   
+    if hasattr(self, "_subscriptions") and not refresh:
+      return self._subscriptions
+    
+    tenants = self.get_tenants(refresh= refresh)
+    
+    subscriptions = {}
+    for tenant in tenants:
+      # pulls all subscriptions to know which ones are resourcecontainers
+      resource_client = ResourceGraphClient(self.get_tenant_credential(tenant_id= tenant["tenantId"]))
+      resource_query_options = QueryRequestOptions(result_format="objectArray")
+      resource_query = QueryRequest(management_groups=[tenant["tenantId"]], query="resourcecontainers | where type == 'microsoft.resources/subscriptions'", options=resource_query_options)
+      resource_query_results = resource_client.resources(resource_query)
+      subscription_details = {subscription.get("id").lower():subscription for subscription in resource_query_results.data}
+      
+      resource_subscription_client = ResourceSubscriptionClient(
+        (self.get_tenant_credential(tenant_id= tenant["tenantId"]))
+      )  
+
+      self._subscriptions[tenant["tenantId"]] = [resource_subscription for resource_subscription in resource_subscription_client.subscriptions.list()]
+
+      for subscription in self._subscriptions[tenant["tenantId"]]:
+        if subscription_details.get(subscription.id.lower()) is None:
+          subscription.resource_container = False
+          continue
+        
+        subscription.resource_container = True
+            
   # def get_subscriptions(self, tenant = None, refresh = False):      
   #   if self._subscriptions is None or refresh is True:
   #     self.get_accounts(refresh = True)

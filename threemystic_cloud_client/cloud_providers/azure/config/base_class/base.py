@@ -14,6 +14,13 @@ class cloud_client_azure_config_base(base):
     config["cli_installed"] = is_cli_installed
 
     self._save_config()
+  
+  def update_sdk_auth(self, sdk_auth = "cli", *args, **kwargs):
+    config = self.get_config()
+    
+    config["sdk_auth"] = sdk_auth
+
+    self._save_config()
      
   def step(self, force_cli_installed_prompt = False, *args, **kwargs):
     
@@ -27,6 +34,7 @@ class cloud_client_azure_config_base(base):
       print("-----------------------------")
       
       self.update_is_cli_installed(is_cli_installed= self._is_azure_installed())
+      self.update_sdk_auth()
       print("cli state updated")
       print("-----------------------------")
       
