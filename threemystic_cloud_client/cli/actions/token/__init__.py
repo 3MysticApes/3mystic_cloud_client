@@ -48,7 +48,7 @@ class cloud_client_token(base):
       return
     
       
-    from threemystic_cloud_client.cloud_providers.aws  import cloud_client_aws as client
+    from threemystic_cloud_client.cloud_providers.aws import cloud_client_aws as client
     client(common= self._cloud_client.get_common()).action_token()
 
 
