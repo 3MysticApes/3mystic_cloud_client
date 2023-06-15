@@ -5,11 +5,10 @@ from knack.log import CLI_LOGGER_NAME
 import logging
 from azure.core.exceptions import HttpResponseError
 from azure.cli.core import get_default_cli
-from azure.mgmt.subscription import SubscriptionClient
-from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.subscriptions import SubscriptionClient as ResourceSubscriptionClient
 from azure.mgmt.resourcegraph import ResourceGraphClient
 from azure.mgmt.resourcegraph.models import QueryRequestOptions, QueryRequest
+from azure.mgmt.costmanagement import CostManagementClient
 
 class cloud_client_azure_client_base(base):
   def __init__(self, *args, **kwargs):
@@ -26,19 +25,22 @@ class cloud_client_azure_client_base(base):
   @abc.abstractclassmethod
   def get_tenant_credential(self, tenant = None, *args, **kwargs):
     pass
-  
-  def __check_error_login(self, exception, *args, **kwargs):
-    if not self.get_common().helper_type().general().is_type(obj= exception, type_check= HttpResponseError):
-      return False       
-    
-    
-    if (HttpResponseError(exception)).status_code is None:
-      if "az login" in self.get_common().helper_type().string().set_case(string_value= (HttpResponseError(exception)).message, case= "lower"):
-        return True
-    
-    return False
         
-        
+  def get_costmanagement_account(self, account, query_definition = None):
+    if query_definition is None:
+        query_definition = self.get_default_querydefinition()
+    
+    try:
+      costmanagement_client = CostManagementClient(credential= self.get_tenant_credential(tenant= self.get_tenant_id(tenant= account, is_account= True)))
+      return self.sdk_request(tenant= self.get_tenant_id(tenant= account, is_account= True), lambda_sdk_command=lambda: costmanagement_client.query.usage(
+          scope= f'{self.get_account_prefix()}{self.get_account_id(account= account)}',
+          parameters= query_definition,
+        )
+      )
+    except Exception as err:        
+      self.get_common().get_logger().exception(msg= f"{self.get_account_id(account= account)} - {str(err)}", extra={"exception": err})
+      return None
+         
   def get_tenants(self, refresh = False, tenant = None, *args, **kwargs):
     if tenant is None:
       return self.__get_tenants()
@@ -166,11 +168,9 @@ class cloud_client_azure_client_base(base):
     
     resource_query = QueryRequest(subscriptions=[self.get_account_id(account= acct) for acct in accounts], query="resourcecontainers | where type == 'microsoft.resources/subscriptions'", options=resource_query_options)
     try:
-      return resource_client.resources(resource_query)
+      return self.sdk_request(tenant= tenant, lambda_sdk_command=lambda: resource_client.resources(resource_query))
     except HttpResponseError as err:   
-      if self.__check_error_login(exception= err):
-        return self.login(tenant= tenant, on_login_function= lambda: self.__get_accounts_resourcecontainers_accounts(tenant=tenant, accounts= accounts, *args, **kwargs)).get("result")
-         
+               
       raise self.get_common().exception().exception(
         exception_type = "generic"
       ).type_error(
@@ -194,14 +194,10 @@ class cloud_client_azure_client_base(base):
     resource_query_options = QueryRequestOptions(result_format="objectArray")
     resource_query = QueryRequest(management_groups=[self.get_tenant_id(tenant= tenant)], query="resourcecontainers | where type == 'microsoft.resources/subscriptions'", options=resource_query_options)
     try:
-      return resource_client.resources(resource_query)
+      return self.sdk_request(tenant= tenant, lambda_sdk_command=lambda: resource_client.resources(resource_query))
     except HttpResponseError as err:       
       if err.status_code == 403:
         return self.__get_accounts_resourcecontainers_accounts(tenant= tenant, accounts= self.get_raw_accounts(tenant= tenant), *args, **kwargs)
-      
-      if self.__check_error_login(exception= err):
-        return self.login(tenant= tenant, on_login_function= lambda: self.__get_accounts_resourcecontainers_managementgroups(tenant=tenant, *args, **kwargs)).get("result")
-          
 
       raise self.get_common().exception().exception(
         exception_type = "generic"
@@ -235,7 +231,7 @@ class cloud_client_azure_client_base(base):
         (self.get_tenant_credential(tenant= tenant_id))
       )  
 
-      subscriptions[self.get_tenant_id(tenant= tenant_id)] = [resource_subscription for resource_subscription in resource_subscription_client.subscriptions.list()]
+      subscriptions[self.get_tenant_id(tenant= tenant_id)] = [resource_subscription for resource_subscription in self.sdk_request(tenant= tenant_id, lambda_sdk_command=lambda: resource_subscription_client.subscriptions.list())]
 
       for subscription in subscriptions[self.get_tenant_id(tenant= tenant_id)]:
         if subscription_details.get(self.get_account_id(account= subscription)) is None:

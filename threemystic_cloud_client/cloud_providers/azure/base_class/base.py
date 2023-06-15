@@ -1,5 +1,8 @@
 from threemystic_cloud_client.cloud_providers.base_class.base import cloud_client_provider_base as base
-
+from azure.mgmt.costmanagement.models import TimeframeType, OperatorType, QueryColumnType, QueryDefinition, QueryTimePeriod, QueryDataset, QueryAggregation, QueryGrouping, QueryFilter, QueryComparisonExpression
+from azure.core.exceptions import HttpResponseError, ClientAuthenticationError
+import time
+import math
 
 class cloud_client_provider_azure_base(base):
   def __init__(self, *args, **kwargs):
@@ -9,6 +12,87 @@ class cloud_client_provider_azure_base(base):
       "cli_doc_link": "https://learn.microsoft.com/en-us/cli/azure/install-azure-cli"
     }
 
+  def check_request_too_many_requests(self, exception, *args, **kwargs):
+    if not self.get_common().helper_type().general().is_type(obj= exception, type_check= HttpResponseError):
+      return False       
+    
+    
+    if (HttpResponseError(exception)).status_code == 429:
+      return True
+    
+    return False
+  
+  def check_request_error_login(self, exception, *args, **kwargs):
+    if self.get_common().helper_type().general().is_type(obj= exception, type_check= HttpResponseError):    
+      if (HttpResponseError(exception)).status_code is None:
+        if "az login" in self.get_common().helper_type().string().set_case(string_value= (HttpResponseError(exception)).message, case= "lower"):
+          return True
+    
+    # as I learn better exceptions I want to make sure I am trackign
+    # if self.get_common().helper_type().general().is_type(obj= exception, type_check= ClientAuthenticationError): 
+       
+    
+    return False
+  def __get_backoff_time(self, count, *args, **kwargs):
+    max_backoff_time = 30
+    back_off_time = math.pow(2, count)
+    if back_off_time > max_backoff_time:
+      back_off_time = max_backoff_time
+    
+    return back_off_time
+
+  def sdk_request(self, tenant, lambda_sdk_command, *args, **kwargs):
+    max_count = 5
+    count = 0
+    while True:
+      try:
+        return lambda_sdk_command()
+      except Exception as err:
+        if count >= max_count:
+          raise self.get_common().exception().exception(
+            exception_type = "generic"
+          ).not_implemented(
+            logger = self.get_common().get_logger(),
+            name = "sdk_request",
+            message = f"too many attempts: {lambda_sdk_command}",
+            exception= err
+          )
+        
+        if(self.check_request_too_many_requests(exception= err)):
+          count += 1
+          time.sleep(self.__get_backoff_time(count= count))
+          continue
+        
+        if self.check_request_error_login(exception= err):
+          return self.login(tenant= tenant, on_login_function= lambda: self.sdk_request(tenant= tenant, lambda_sdk_command=lambda_sdk_command, *args, **kwargs)).get("result")
+
+        raise err
+
+
+          
+
+
+       
+  def get_default_querydefinition(self):
+    return QueryDefinition(
+      type= "ActualCost",
+      timeframe= TimeframeType.THE_LAST_MONTH,
+      dataset= QueryDataset(
+      aggregation= {
+        "totalCost": QueryAggregation(
+          name= "Cost",
+          function= "Sum"
+        )
+      },
+      grouping= [
+        QueryGrouping(
+          type= QueryColumnType.DIMENSION,
+          name= "SubscriptionId"
+        )
+      ]
+      )
+    )
+  
   def serialize_azresource(self, resource, *args, **kwargs):
     if resource is None:
       return None
