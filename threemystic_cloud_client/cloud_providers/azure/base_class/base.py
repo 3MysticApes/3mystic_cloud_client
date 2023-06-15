@@ -67,12 +67,7 @@ class cloud_client_provider_azure_base(base):
           return self.login(tenant= tenant, on_login_function= lambda: self.sdk_request(tenant= tenant, lambda_sdk_command=lambda_sdk_command, *args, **kwargs)).get("result")
 
         raise err
-
-
-          
-
-
-       
+     
   def get_default_querydefinition(self):
     return QueryDefinition(
       type= "ActualCost",
@@ -105,12 +100,18 @@ class cloud_client_provider_azure_base(base):
 
     return aztype.deserialize(resource)
 
+  def get_resource_name_from_resource(self, resource, *args, **kwargs):
+    if resource is None:
+        return None
+
+    return resource.name
+
   def get_resource_id_from_resource(self, resource, *args, **kwargs):
     if resource is None:
         return None
 
     return self.get_common().helper_type().string().set_case(
-      string_value=resource.id.lower(), 
+      string_value=resource.id, 
       case= "lower"
     )
   
