@@ -36,6 +36,21 @@ class cloud_client_cli(base_process_options):
             "help": "Action: This is so you can test the config setup to ensure the base connection is good",
             "action": 'store_const'
         },
+        "--token": {
+            "default": None, 
+            "const": "token",
+            "dest": "client_action",
+            "help": "Action: This is so that you can generate the required token.",
+            "action": 'store_const'
+        },
+        "--provider,-p": {
+            "default": None, 
+            "type": str,
+            "choices": self._cloud_client.get_supported_providers(),
+            "dest": "client_provider",
+            "help": "Provider: This is to set the provider that should be used",
+            "action": 'store'
+        }
       }
     )
 
@@ -43,22 +58,30 @@ class cloud_client_cli(base_process_options):
       parser = self.parser
     )
 
-    self._client_action = processed_info["processed_data"].get("client_action")
+    for key, value in processed_info["processed_data"].items():
+      setattr(self, f"_{key}", value)
     
     
-  def process_client_action(self, action):
-    if action == "version":
+  def process_client_action(self, force_action = None, *args, **kwargs):
+    if self._cloud_client.get_common().helper_type().string().is_null_or_whitespace(string_value= force_action):
+      force_action = self.__get_client_acount()
+    if force_action == "version":
       self.version_dispaly()
       return
     
-    if action == "config":
+    if force_action == "config":
       from threemystic_cloud_client.cli.actions.config import cloud_client_config as user_action
-      user_action(cloud_client= self._cloud_client).main()
+      user_action(cloud_client= self._cloud_client).main(provider= self._client_provider)
       return
 
-    if action == "test":
+    if force_action == "test":
       from threemystic_cloud_client.cli.actions.test import cloud_client_test as user_action
-      user_action(cloud_client= self._cloud_client).main()
+      user_action(cloud_client= self._cloud_client).main(provider= self._client_provider)
+      return
+
+    if force_action == "token":
+      from threemystic_cloud_client.cli.actions.token import cloud_client_token as user_action
+      user_action(cloud_client= self._cloud_client).main(provider= self._client_provider)
       return
 
     return
@@ -69,15 +92,20 @@ class cloud_client_cli(base_process_options):
     print(f"3mystic_common: v{self._cloud_client.get_common().version()}")
     print()
 
+  def __get_client_acount(self, *args, **kwargs):
+    if not hasattr(self, "_client_action"):
+      return None
+    
+    return self._client_action
   def main(self, *args, **kwargs):    
-    if self._client_action is None:
+    if self.__get_client_acount() is None:
       print(f"Thank you for using the 3 Mystic Apes Cloud Client.")
       self.version_dispaly()
       print()
       self.parser.print_help()
       return
     
-    self.process_client_action(action= self._client_action )
+    self.process_client_action( )
 
 def main(*args, **kwargs):    
   cloud_client_cli(*args, **kwargs).main(*args, **kwargs)

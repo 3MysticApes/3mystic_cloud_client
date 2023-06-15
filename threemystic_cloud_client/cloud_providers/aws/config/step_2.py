@@ -4,7 +4,7 @@ import configparser
 
 class cloud_client_aws_config_step_2(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(logger_name= "cloud_client_aws_config_step_2", provider= "aws", *args, **kwargs)
+    super().__init__(logger_name= "cloud_client_aws_config_step_2", *args, **kwargs)
 
   def step(self, is_new_config, *args, **kwargs):
 
@@ -34,7 +34,7 @@ class cloud_client_aws_config_step_2(base):
               "validation": f"Valid Options: {self.valid_auth_options()}",
             },
             "conversion": lambda item: self.get_common().helper_type().string().trim(string_value= self.get_common().helper_type().string().trim(string_value= self.get_common().helper_type().string().set_case(string_value= item, case= "lower"))) if item is not None else None,
-            "desc": f"Which provider should we configure\nvalid options are {self.valid_auth_options()}",
+            "desc": f"Which provider authentication\nvalid options are {self.valid_auth_options()}",
             "handler": generate_data_handlers.get_handler(handler= "base"),
             "optional": False
           }
@@ -55,7 +55,7 @@ class cloud_client_aws_config_step_2(base):
       print("Auth Method was empty.")
       return 
 
-    if(self.has_config_profile_name(profile_name= profile_name)):
+    if(self.config_profile_name_exists(profile_name= profile_name)):
       response_existing = self.get_common().generate_data().generate(
         generate_data_config = {
           "update_existing": {
@@ -146,14 +146,14 @@ class cloud_client_aws_config_step_2(base):
     
     profile_name = self.get_common().helper_type().string().trim(string_value= profile_name)  
     config_parser = configparser.ConfigParser()
-    if(self.get_common().helper_path().path_exists(path= self.aws_config_path())):
-      with self.get_common().helper_path().expandpath_user(path= self.aws_config_path()).open(mode="r") as config_file:
+    if(self.get_common().helper_path().path_exists(path= self.get_aws_user_path_config())):
+      with self.get_common().helper_path().expandpath_user(path= self.get_aws_user_path_config()).open(mode="r") as config_file:
         config_parser.read_file(config_file)
     else:
       print()
       print()
       print("*********************************************************")
-      print(f"AWS config path not found: {self.aws_config_path()}")
+      print(f"AWS config path not found: {self.get_aws_user_path_config()}")
       print("setup will not work until aws is configured")
       print("*********************************************************")
       print()

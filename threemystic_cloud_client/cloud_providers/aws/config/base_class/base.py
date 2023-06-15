@@ -19,22 +19,21 @@ class cloud_client_aws_config_base(base):
           existing_profile_data["default_profile"] = False
     
     if auto_save:
-      self.save_config()
+      self._save_config()
   
   def update_is_cli_installed(self, is_cli_installed, *args, **kwargs):
     config = self.get_config()
-    if(config is None):
-      config = {}
     
     config["cli_installed"] = is_cli_installed
 
-    self.save_config()
+    self._save_config()
+  
+  def update_sdk_auth(self, sdk_auth = "cli", *args, **kwargs):
+    config = self.get_config()
+    
+    config["sdk_auth"] = sdk_auth
 
-  def save_config(self, *args, **kwargs):
-     self.config_path().write_text(
-      data= self.get_common().helper_yaml().dumps(data= self.get_config())
-     )
-     self.get_config(force_update = True)
+    self._save_config()
      
   def step(self, force_cli_installed_prompt = False, *args, **kwargs):
     
@@ -47,9 +46,12 @@ class cloud_client_aws_config_base(base):
       print("-----------------------------")
       
       self.update_is_cli_installed(is_cli_installed= self._is_aws_installed())
+      self.update_sdk_auth()
+      print("cli state updated")
+      print("-----------------------------")
       
       if self.is_cli_installed() != True:
-        print("Please install the aws cli")
+        print("Please install the aws cli, if its not already installed.")
         return False
 
     return True
@@ -67,7 +69,7 @@ class cloud_client_aws_config_base(base):
             "default": self.is_cli_installed(),
             "handler": generate_data_handlers.get_handler(handler= "base"),
             "optional": True
-        }
+        },
       }
     )
 

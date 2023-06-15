@@ -1,32 +1,40 @@
-from threemystic_cloud_client.base_class.base import base
+from threemystic_common.base_class.base_provider import base
 import abc
 
 class cloud_client_provider_base(base):
-  def __init__(self, provider, *args, **kwargs):
+  def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self._provider = provider
-    self.__config = None
+    
+    self._post_init(*args, **kwargs)
+
+  
+  def _post_init(self, *args, **kwargs):
+    pass
+  
+  def get_main_directory_name(self, *args, **kwargs):
+    return "client"
 
   @abc.abstractmethod
-  def get_account_name(self, account):
+  def get_account_name(self, account, *args, **kwargs):
     pass
 
   @abc.abstractmethod
-  def get_account_id(self, account):
+  def get_account_id(self, account, *args, **kwargs):
     pass
 
   @abc.abstractmethod
-  def make_account(self, account):
+  def make_account(self, account, *args, **kwargs):
     pass  
 
   def __load_config(self, *args, **kwargs):
-    return self.get_common().helper_config().load(
+    config_data = self.get_common().helper_config().load(
       path= self.config_path(),
       config_type= "yaml"
     )
-  
-  def get_provider(self, *args, **kwargs):
-    return self._provider
+    if config_data is not None:
+      return config_data
+    
+    return {}
 
   def is_cli_installed(self, *args, **kwargs):
     return self.get_config().get("cli_installed") == True
@@ -45,7 +53,7 @@ class cloud_client_provider_base(base):
     return ["sso"]
 
   def config_path(self, *args, **kwargs):
-    return self.get_common().get_threemystic_config_path().joinpath(f"3mystic_cloud_client_config_{self.get_provider()}")
+    return self.get_common().get_threemystic_directory_config().joinpath(f"{self.get_main_directory_name()}/config_{self.get_provider()}")
     
   def get_aws_user_path(self, *args, **kwargs):
     return self.get_common().helper_path().expandpath_user("~/.aws")
@@ -82,26 +90,29 @@ class cloud_client_provider_base(base):
     
     return self.get_config_profile_name(*args, **kwargs) != None
   
-  def get_config(self, force_update = False, *args, **kwargs):
-    if self.__config is not None and not force_update:
-      return self.__config
-      
-    self.__config = self.__load_config()
-    if(self.__config is None):
-      self.__config = {}
-      return self.get_config(*args, **kwargs)
+  def get_config(self, refresh = False, *args, **kwargs):
+    if hasattr(self, "_config_data") and not refresh:
+      return self._config_data
     
-    self.__config["profiles"] = {self.get_common().helper_type().string().set_case(string_value= profile_name, case= "lower"):profile_data for profile_name,profile_data in self.get_config_profiles().items()}
+    self._config_data = self.__load_config()    
+    self._config_data["profiles"] = {self.get_common().helper_type().string().set_case(string_value= profile_name, case= "lower"):profile_data for profile_name,profile_data in self.get_config_profiles().items()}
 
     return self.get_config(*args, **kwargs)
   
+  def _save_config(self, *args, **kwargs):
+     if not self.config_path().parent.exists():
+       self.config_path().mkdir(parents= True)
+     self.config_path().write_text(
+      data= self.get_common().helper_yaml().dumps(data= self.get_config())
+     )
+     self.get_config(refresh = True)
+
   def has_config_profiles(self, *args, **kwargs):
     
-    profiles = self.get_config().get("profiles")
-    if profiles is None:
+    if self.get_config().get("profiles") is None:
       return False
     
-    return len(profiles) > 0
+    return len(self.get_config().get("profiles")) > 0
 
   def get_config_profiles(self, *args, **kwargs):
     if self.get_config().get("profiles") is not None:
@@ -112,7 +123,7 @@ class cloud_client_provider_base(base):
 
   def get_config_profile_name(self, profile_name = None, *args, **kwargs):
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_name):
-      return False
+      return None
     
     profile_name = self.get_common().helper_type().string().set_case(string_value= profile_name, case= "lower")
     for existing_profile_name, profile_data in self.get_config_profiles().items():
@@ -129,6 +140,9 @@ class cloud_client_provider_base(base):
   
   def action_test(self, *args, **kwargs):
     print("Provider test config not configured")
+  
+  def action_token(self, *args, **kwargs):
+    print("Provider token config not configured")
 
     
 

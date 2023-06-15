@@ -4,16 +4,20 @@ from threemystic_common.base_class.generate_data.generate_data_handlers import g
 
 class cloud_client_aws_test_step_2(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(logger_name= "cloud_client_aws_test2", provider= "aws", *args, **kwargs)
+    super().__init__(logger_name= "cloud_client_aws_test2", *args, **kwargs)
     
 
   def step(self, profile_name, *args, **kwargs):
     if not super().step(*args, **kwargs):
       return
     
-    from threemystic_cloud_client.cloud_providers.aws.client.auto_client import cloud_client_aws_client_auto as auto_client
-    aws_client = auto_client(profile_name= profile_name).get_client()
+    from threemystic_cloud_client.cloud_client import cloud_client
+    aws_client = cloud_client(logger= self.get_logger(), common=self.get_common()).client(
+      provider= "aws",
+      profile_name= profile_name
+    )
 
+    
     print(f"Connected to Account ID: {aws_client.get_main_account_id()}")
     print(f"Org Account ID: {aws_client.get_organization_account_id()}")
     print(f"You have the following accounts:")
