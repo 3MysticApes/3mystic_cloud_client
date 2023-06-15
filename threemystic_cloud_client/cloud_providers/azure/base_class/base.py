@@ -9,7 +9,7 @@ class cloud_client_provider_azure_base(base):
       "cli_doc_link": "https://learn.microsoft.com/en-us/cli/azure/install-azure-cli"
     }
 
-  def serialize_azresource(self, resource):
+  def serialize_azresource(self, resource, *args, **kwargs):
     if resource is None:
       return None
 
@@ -21,7 +21,7 @@ class cloud_client_provider_azure_base(base):
 
     return aztype.deserialize(resource)
 
-  def get_resource_id_from_resource(self, resource):
+  def get_resource_id_from_resource(self, resource, *args, **kwargs):
     if resource is None:
         return None
 
@@ -30,7 +30,7 @@ class cloud_client_provider_azure_base(base):
       case= "lower"
     )
   
-  def get_resource_group_from_resource(self, resource):
+  def get_resource_group_from_resource(self, resource, *args, **kwargs):
     if hasattr(resource, "resource_group"):
       return resource.resource_group 
     
@@ -42,6 +42,17 @@ class cloud_client_provider_azure_base(base):
       regex_split= False
     )
     return resource_id_split[resource_id_split.index("resourcegroups") + 1]
+  
+  def get_azresource_location(self, resource, *args, **kwargs):
+    if resource is None:
+      return None
+
+    if not self.get_common().helper_type().general().is_type(obj= resource, type_check= str):
+      if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+          return self.get_azresource_location(resource= resource.get("extra_region") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=resource.get("extra_region")) else resource.get("location"))
+      return self.get_azresource_location(resource= getattr(resource, "location"))
+
+    return resource
   
   def get_tenant_prefix(self, *args, **kwargs):
     return "/tenants/"
