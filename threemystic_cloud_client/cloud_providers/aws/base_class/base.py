@@ -31,7 +31,7 @@ class cloud_client_provider_aws_base(base):
     raise self.get_common().exception().exception(
       exception_type = "generic"
     ).not_implemented(
-      logger = self.logger,
+      logger = self.get_common().get_logger(),
       name = "account",
       message = f"Unknown account object: {account}."
     )
@@ -52,7 +52,7 @@ class cloud_client_provider_aws_base(base):
     raise self.get_common().exception().exception(
       exception_type = "generic"
     ).not_implemented(
-      logger = self.logger,
+      logger = self.get_common().get_logger(),
       name = "account",
       message = f"Unknown account object: {account}."
     )

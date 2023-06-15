@@ -36,7 +36,7 @@ class cloud_client(base):
       raise self.get_common().exception(
         exception_type = "argument"
       ).not_implemented(
-        logger = self.logger,
+        logger = self.get_common().get_logger(),
         name = "provider",
         message = f"Unknown Cloud Provided: {provider}.\nSupported Cloud Providers{self.get_supported_providers()}"
       )
@@ -58,7 +58,7 @@ class cloud_client(base):
     raise self.get_common().exception().exception(
       exception_type = "argument"
     ).not_implemented(
-      logger = self.logger,
+      logger = self.get_common().get_logger(),
       name = "provider",
       message = f"Unknown Cloud Provided: {provider}.\nSupported Cloud Providers{self.get_supported_providers()}"
     )
@@ -68,7 +68,7 @@ class cloud_client(base):
       raise self.get_common().exception().exception(
         exception_type = "argument"
       ).not_implemented(
-        logger = self.logger,
+        logger = self.get_common().get_logger(),
         name = "provider",
         message = f"provider cannot be null or whitespace"
       )
