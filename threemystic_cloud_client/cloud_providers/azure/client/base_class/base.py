@@ -8,7 +8,6 @@ from azure.cli.core import get_default_cli
 from azure.mgmt.resource.subscriptions import SubscriptionClient as ResourceSubscriptionClient
 from azure.mgmt.resourcegraph import ResourceGraphClient
 from azure.mgmt.resourcegraph.models import QueryRequestOptions, QueryRequest
-from azure.mgmt.costmanagement import CostManagementClient
 
 class cloud_client_azure_client_base(base):
   def __init__(self, *args, **kwargs):
@@ -25,21 +24,6 @@ class cloud_client_azure_client_base(base):
   @abc.abstractclassmethod
   def get_tenant_credential(self, tenant = None, *args, **kwargs):
     pass
-        
-  def get_costmanagement_account(self, account, query_definition = None):
-    if query_definition is None:
-        query_definition = self.get_default_querydefinition()
-    
-    try:
-      costmanagement_client = CostManagementClient(credential= self.get_tenant_credential(tenant= self.get_tenant_id(tenant= account, is_account= True)))
-      return self.sdk_request(tenant= self.get_tenant_id(tenant= account, is_account= True), lambda_sdk_command=lambda: costmanagement_client.query.usage(
-          scope= f'{self.get_account_prefix()}{self.get_account_id(account= account)}',
-          parameters= query_definition,
-        )
-      )
-    except Exception as err:        
-      self.get_common().get_logger().exception(msg= f"{self.get_account_id(account= account)} - {str(err)}", extra={"exception": err})
-      return None
          
   def get_tenants(self, refresh = False, tenant = None, *args, **kwargs):
     if tenant is None:
