@@ -7,7 +7,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "threemystic-cloud-client"
-description = "Common Library for for various tool sets"
+description = "A tool to help facilitate the communication with various cloud providers"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.8"
