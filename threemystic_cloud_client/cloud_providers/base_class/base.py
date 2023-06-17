@@ -99,6 +99,13 @@ class cloud_client_provider_base(base):
 
     return self.get_config(*args, **kwargs)
   
+  def get_config_value(self, config_key, default_if_none = None, refresh = False, *args, **kwargs):
+    config_value = self.get_config(refresh= refresh).get(config_key)
+    if config_value is not None:
+      return config_value
+    
+    return default_if_none
+  
   def _save_config(self, *args, **kwargs):
      if not self.config_path().parent.exists():
        self.config_path().mkdir(parents= True)
