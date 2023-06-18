@@ -25,8 +25,9 @@ class cloud_client_token(base):
         "epilog": ""
       },
       parser_args = self._cloud_client.get_common().helper_type().dictionary().merge_dictionary([
-         self._token_parser_args,
-         {
+        {},
+        self._token_parser_args,
+        {
           "--account": {
             "default": None, 
             "type": str,
@@ -67,8 +68,9 @@ class cloud_client_token(base):
         "epilog": ""
       },
       parser_args = self._cloud_client.get_common().helper_type().dictionary().merge_dictionary([
-         self._token_parser_args,
-         {
+        {},
+        self._token_parser_args,
+        {
           "--resource": {
             "default": None, 
             "type": str,

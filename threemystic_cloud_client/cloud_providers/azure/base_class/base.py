@@ -153,7 +153,7 @@ class cloud_client_provider_azure_base(base):
     if self.get_common().helper_type().general().is_type(obj= account, type_check= str):
       return account.strip()
     
-    name_options = ["display_name", "name"]
+    name_options = ["display_name", "displayname", "name"]
 
     if self.get_common().helper_type().general().is_type(obj= account, type_check= dict):
       for key, value in account.items():
