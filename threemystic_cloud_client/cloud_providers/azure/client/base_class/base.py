@@ -261,16 +261,15 @@ class cloud_client_azure_client_base(base):
         
     except SystemExit as ex:
       exit_code = ex.code
-
+      
     if exit_code == 0:
+      if az_cli_args[0].lower() == "login" and on_login_function is not None:
+        return on_login_function()
+      
       return {
         "exit_code": exit_code,
         "result": self.get_common().helper_json().loads(data= stdout_buffer.getvalue()) if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= stdout_buffer.getvalue()) else None,
         "error": log_buffer.getvalue()
-      }
-    if self.error_trigger_login(log_buffer.getvalue()):
-      return {
-        "result": self.auto_login(on_login_function = on_login_function, require_tenant_id= self.error_login_requires_tenant(log_buffer.getvalue()))
       }
     
     return {

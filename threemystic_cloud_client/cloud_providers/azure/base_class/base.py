@@ -66,7 +66,7 @@ class cloud_client_provider_azure_base(base):
           continue
         
         if self.check_request_error_login(exception= err):
-          return self.login(tenant= tenant, on_login_function= lambda: self.sdk_request(tenant= tenant, lambda_sdk_command=lambda_sdk_command, *args, **kwargs)).get("result")
+          return self.login(tenant= tenant, on_login_function= lambda: self.sdk_request(tenant= tenant, lambda_sdk_command=lambda_sdk_command, *args, **kwargs))
 
         raise err
      
