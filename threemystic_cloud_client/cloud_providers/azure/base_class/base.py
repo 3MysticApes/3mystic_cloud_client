@@ -93,6 +93,9 @@ class cloud_client_provider_azure_base(base):
   def serialize_azresource(self, resource, *args, **kwargs):
     if resource is None:
       return None
+    
+    if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+      return resource
 
     return resource.serialize(keep_readonly= True)
     
@@ -106,11 +109,20 @@ class cloud_client_provider_azure_base(base):
     if resource is None:
         return None
 
+    if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+      return resource.get("name")     
+
     return resource.name
 
   def get_resource_id_from_resource(self, resource, *args, **kwargs):
     if resource is None:
         return None
+
+    if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+      if "extra_id" in resource and resource.get("extra_id") is not None:
+        resource.get("extra_id")
+      
+      return resource.get("id")
 
     return self.get_common().helper_type().string().set_case(
       string_value=resource.id, 
@@ -118,6 +130,15 @@ class cloud_client_provider_azure_base(base):
     )
   
   def get_resource_group_from_resource(self, resource, *args, **kwargs):
+    if resource is None:
+        return None
+
+    if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+      if "extra_resourcegroups" in resource and resource.get("extra_resourcegroups") is not None:
+        return resource.get("extra_resourcegroups")[0]
+      
+      return resource.get("resource_group")
+      
     if hasattr(resource, "resource_group"):
       return resource.resource_group 
     
