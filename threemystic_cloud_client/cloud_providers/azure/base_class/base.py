@@ -120,9 +120,15 @@ class cloud_client_provider_azure_base(base):
 
     if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
       if "extra_id" in resource and resource.get("extra_id") is not None:
-        resource.get("extra_id")
+        return self.get_common().helper_type().string().set_case(
+          string_value= resource.get("extra_id"), 
+          case= "lower"
+        )
       
-      return resource.get("id")
+      return self.get_common().helper_type().string().set_case(
+          string_value= resource.get("id"), 
+          case= "lower"
+        )
 
     return self.get_common().helper_type().string().set_case(
       string_value=resource.id, 
