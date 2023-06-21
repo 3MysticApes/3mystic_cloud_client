@@ -108,15 +108,30 @@ class cloud_client_provider_azure_base(base):
   def get_resource_name_from_resource(self, resource, *args, **kwargs):
     if resource is None:
         return None
+    
+    if self.get_common().helper_type().general().is_type(obj= resource, type_check= str):
+      return resource
 
     if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
       return resource.get("name")     
 
     return resource.name
 
+  def get_resource_id_short_from_resource(self, resource, include_resource_group = False, *args, **kwargs):
+    resource_id = self.get_resource_id_from_resource(resource= resource)
+    resource_id = resource_id[resource_id.rfind("/resourcegroups/"):]
+
+    if include_resource_group:
+      return resource_id
+
+    return resource_id.append(resource_id[resource_id.rfind("/providers/"):])
+
   def get_resource_id_from_resource(self, resource, *args, **kwargs):
     if resource is None:
         return None
+    
+    if self.get_common().helper_type().general().is_type(obj= resource, type_check= str):
+      return resource
 
     if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
       if "extra_id" in resource and resource.get("extra_id") is not None:
@@ -138,6 +153,9 @@ class cloud_client_provider_azure_base(base):
   def get_resource_group_from_resource(self, resource, *args, **kwargs):
     if resource is None:
         return None
+
+    if self.get_common().helper_type().general().is_type(obj= resource, type_check= str):
+      return resource
 
     if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
       if "extra_resourcegroups" in resource and resource.get("extra_resourcegroups") is not None:
