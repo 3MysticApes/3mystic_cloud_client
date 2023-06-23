@@ -45,7 +45,7 @@ class cloud_client_azure_client_base(base):
     if hasattr(self, "_tenants") and not refresh:
       return self._tenants
     
-    bashCall = "az account tenant list --only-show-errors"
+    bashCall = "az account tenant list"
     return_result = self._az_cli(bashCall, on_login_function = lambda: self.get_tenants(refresh = refresh))
 
     if len(return_result["error"])>0:
@@ -62,7 +62,7 @@ class cloud_client_azure_client_base(base):
     if hasattr(self, "_raw_accounts") and not refresh:
       return self._raw_accounts
     
-    bashCall = "az account list{} --only-show-errors".format(" --refresh" if refresh else "")
+    bashCall = "az account list{}".format(" --refresh" if refresh else "")
     return_result = self._az_cli(bashCall, on_login_function = lambda: self.get_accounts(refresh = refresh))
 
     if len(return_result["error"])>0:
@@ -248,6 +248,7 @@ class cloud_client_azure_client_base(base):
     
     try:
       az_cli_args = self.get_common().helper_type().string().split(string_value= command, separator="\\s")
+      az_cli_args.append("--only-show-errors")
 
       if az_cli_args[0].lower() == "az":
         az_cli_args.pop(0)
