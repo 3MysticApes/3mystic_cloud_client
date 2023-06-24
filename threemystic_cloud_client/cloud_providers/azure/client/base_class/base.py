@@ -265,6 +265,8 @@ class cloud_client_azure_client_base(base):
       
     if exit_code == 0:
       if az_cli_args[0].lower() == "login" and on_login_function is not None:
+        # look to update this to pull a page of subscriptions and put this in some sort of loop to retry
+        # thought create a validate login method.
         return on_login_function()
       
       return {
