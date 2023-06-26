@@ -1,5 +1,5 @@
 from threemystic_cloud_client.cloud_providers.azure.base_class.base import cloud_client_provider_azure_base as base
-import abc
+from abc import abstractmethod
 from io import StringIO
 from knack.log import CLI_LOGGER_NAME
 import logging
@@ -14,7 +14,7 @@ class cloud_client_azure_client_base(base):
     super().__init__(*args, **kwargs)
 
   
-  @abc.abstractclassmethod
+  @abstractmethod
   def get_tenant_credential(self, tenant = None, *args, **kwargs):
     pass
          

@@ -1,5 +1,5 @@
 import sys
-import abc
+from abc import abstractmethod
 from threemystic_common.base_class.generate_data.generate_data_handlers import generate_data_handlers
 
 
@@ -42,11 +42,11 @@ class cloud_client_action_base():
     if provider == "aws":
       self._process_provider_aws()
   
-  @abc.abstractmethod
+  @abstractmethod
   def _process_provider_aws(self, *args, **kwargs):
     pass
 
-  @abc.abstractmethod
+  @abstractmethod
   def _process_provider_azure(self, *args, **kwargs):
     pass
 

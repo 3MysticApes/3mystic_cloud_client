@@ -1,5 +1,5 @@
 import os
-import abc
+from abc import abstractmethod
 from threemystic_cloud_client.cloud_providers.aws.base_class.base import cloud_client_provider_aws_base as base
 from botocore import session as botocore_session, credentials as botocore_credentials
 from botocore.config import Config as botocore_config_config
@@ -96,35 +96,35 @@ class cloud_client_aws_client_base(base):
   def _post_init(self, *args, **kwargs):
     self._load_base_configs()
   
-  @abc.abstractmethod
+  @abstractmethod
   def _load_base_configs(self):
     pass
   
-  @abc.abstractmethod
+  @abstractmethod
   def get_main_account_id(self, *args, **kwargs):
     pass
 
-  @abc.abstractmethod
+  @abstractmethod
   def get_organization_account_id(self, *args, **kwargs):
     pass
   
-  @abc.abstractmethod
+  @abstractmethod
   def _assume_role(self, *args, **kwargs):    
     pass
   
-  @abc.abstractmethod
+  @abstractmethod
   def get_default_rolename(self, *args, **kwargs):
     pass
   
-  @abc.abstractmethod
+  @abstractmethod
   def get_default_region(self, *args, **kwargs):
     pass
   
-  @abc.abstractmethod
+  @abstractmethod
   def get_default_account(self, *args, **kwargs):
     pass
   
-  @abc.abstractmethod
+  @abstractmethod
   def authenticate_session(self, *args, **kwargs):
     pass
 

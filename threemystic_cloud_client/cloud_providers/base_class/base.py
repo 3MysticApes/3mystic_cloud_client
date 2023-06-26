@@ -1,5 +1,5 @@
 from threemystic_common.base_class.base_provider import base
-import abc
+from abc import abstractmethod
 
 class cloud_client_provider_base(base):
   def __init__(self, *args, **kwargs):
@@ -14,15 +14,15 @@ class cloud_client_provider_base(base):
   def get_main_directory_name(self, *args, **kwargs):
     return "client"
 
-  @abc.abstractmethod
+  @abstractmethod
   def get_account_name(self, account, *args, **kwargs):
     pass
 
-  @abc.abstractmethod
+  @abstractmethod
   def get_account_id(self, account, *args, **kwargs):
     pass
 
-  @abc.abstractmethod
+  @abstractmethod
   def make_account(self, account, *args, **kwargs):
     pass  
 

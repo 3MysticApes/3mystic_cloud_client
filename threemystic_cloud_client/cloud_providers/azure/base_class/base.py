@@ -3,6 +3,7 @@ from azure.mgmt.costmanagement.models import TimeframeType, OperatorType, QueryC
 from azure.core.exceptions import HttpResponseError, ClientAuthenticationError
 import time
 import math
+from abc import abstractmethod
 
 class cloud_client_provider_azure_base(base):
   def __init__(self, *args, **kwargs):
@@ -13,7 +14,7 @@ class cloud_client_provider_azure_base(base):
     }
 
   
-  @abc.abstractclassmethod
+  @abstractmethod
   def login(self, *args, **kwargs):
     pass
 
