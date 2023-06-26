@@ -12,6 +12,21 @@ class cloud_client_provider_azure_base(base):
       "cli_doc_link": "https://learn.microsoft.com/en-us/cli/azure/install-azure-cli"
     }
 
+  
+  @abc.abstractclassmethod
+  def login(self, *args, **kwargs):
+    pass
+
+  def _get_credential(self, *args, **kwargs):
+    if hasattr(self, "_credentials"):
+      return self._credentials
+    
+    self._credentials = {}
+    return self._get_credential()
+
+  def _clear_credential(self, *args, **kwargs):
+    delattr(self, "_credentials")
+  
   def check_request_too_many_requests(self, exception, *args, **kwargs):
     if not self.get_common().helper_type().general().is_type(obj= exception, type_check= HttpResponseError):
       return False       

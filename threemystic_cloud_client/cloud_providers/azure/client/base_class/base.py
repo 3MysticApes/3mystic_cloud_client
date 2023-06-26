@@ -13,13 +13,6 @@ class cloud_client_azure_client_base(base):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-    
-  def _get_credential(self, *args, **kwargs):
-    if hasattr(self, "_credentials"):
-      return self._credentials
-    
-    self._credentials = {}
-    return self._get_credential()
   
   @abc.abstractclassmethod
   def get_tenant_credential(self, tenant = None, *args, **kwargs):
@@ -229,12 +222,6 @@ class cloud_client_azure_client_base(base):
   def get_accounts(self, account= None, tenant= None, refresh= False, *args, **kwargs):      
     return self.__get_accounts(account= account, tenant= tenant, refresh= refresh, *args, **kwargs)
 
-    
-    
-
-  @abc.abstractclassmethod
-  def login(self, *args, **kwargs):
-    pass
 
   def _az_cli(self, command, on_login_function = None, *args, **kwargs):
 
@@ -264,10 +251,12 @@ class cloud_client_azure_client_base(base):
       exit_code = ex.code
       
     if exit_code == 0:
-      if az_cli_args[0].lower() == "login" and on_login_function is not None:
-        # look to update this to pull a page of subscriptions and put this in some sort of loop to retry
-        # thought create a validate login method.
-        return on_login_function()
+      if az_cli_args[0].lower() == "login":
+        self._clear_credential()
+        if on_login_function is not None:
+          # look to update this to pull a page of subscriptions and put this in some sort of loop to retry
+          # thought create a validate login method.
+          return on_login_function()
       
       return {
         "exit_code": exit_code,
