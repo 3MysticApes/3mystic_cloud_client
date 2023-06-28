@@ -4,19 +4,49 @@ from azure.core.exceptions import HttpResponseError, ClientAuthenticationError
 import time
 import math
 from abc import abstractmethod
+from polling2 import TimeoutException, poll
+
 
 class cloud_client_provider_azure_base(base):
   def __init__(self, *args, **kwargs):
+    self._stop_process_login()
     super().__init__(provider= "azure", *args, **kwargs)
-
+    
     self.links = {
       "cli_doc_link": "https://learn.microsoft.com/en-us/cli/azure/install-azure-cli"
     }
 
   
   @abstractmethod
-  def login(self, *args, **kwargs):
+  def _login(self, *args, **kwargs):
     pass
+
+  def is_login_processing(self, *args, **kwargs):
+    return (self.__is_processing_login is True)
+  
+  def _start_process_login(self, *args, **kwargs):
+    self.__is_processing_login = True
+  
+  def _stop_process_login(self, *args, **kwargs):
+    self.__is_processing_login = False
+
+  def _start_process_login(self, *args, **kwargs):
+    self.__is_processing_login = True
+     
+  def login(self, *args, **kwargs):
+    if self.is_login_processing():
+      poll(
+        lambda: self.is_login_processing(),
+        ignore_exceptions=(Exception,),
+        timeout=240,
+        step=0.1
+      )
+
+    self._start_process_login()
+    return_data = self._login(*args, **kwargs)
+    self._stop_process_login()
+
+    return return_data
 
   def _get_credential(self, *args, **kwargs):
     if hasattr(self, "_credentials"):

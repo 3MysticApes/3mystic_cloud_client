@@ -7,10 +7,8 @@ class cloud_client_azure_client_cli(base):
   def __init__(self, *args, **kwargs):
     super().__init__(logger_name= "cloud_client_azure_client_sso", *args, **kwargs)
 
-  def login(self, *args, **kwargs):
-    self.__login(*args, **kwargs)
   
-  def __login(self, on_login_function = None, tenant = None, *args, **kwargs):
+  def _login(self, on_login_function = None, tenant = None, *args, **kwargs):
  
     tenant_id = f' --tenant {self.get_tenant_id(tenant= tenant)}' if tenant is not None else ""
 
