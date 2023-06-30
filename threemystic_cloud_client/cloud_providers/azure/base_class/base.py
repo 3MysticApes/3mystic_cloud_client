@@ -82,12 +82,7 @@ class cloud_client_provider_azure_base(base):
     
     return False
   def __get_backoff_time(self, count, *args, **kwargs):
-    max_backoff_time = 32
-    back_off_time = math.pow(2, count)
-    if back_off_time > max_backoff_time:
-      back_off_time = max_backoff_time
-    
-    return back_off_time
+    return self.get_common().helper_type().requests().expodential_backoff_wait(attempt= count, auto_sleep= False)
 
   def sdk_request(self, tenant, lambda_sdk_command, *args, **kwargs):
     max_count = 15
