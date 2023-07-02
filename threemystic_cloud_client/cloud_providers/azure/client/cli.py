@@ -12,7 +12,7 @@ class cloud_client_azure_client_cli(base):
  
     tenant_id = f' --tenant {self.get_tenant_id(tenant= tenant)}' if tenant is not None else ""
 
-    self._az_cli(
+    return self._az_cli(
       command= f"az login{tenant_id} --allow-no-subscriptions",
       on_login_function = on_login_function
     )
