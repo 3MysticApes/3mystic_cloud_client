@@ -6,6 +6,9 @@ class cloud_client_azure_config_base(base):
     super().__init__(*args, **kwargs)
 
   
+  def _login(self, *args, **kwargs):
+    pass
+  
   def update_is_cli_installed(self, is_cli_installed, *args, **kwargs):
     config = self.get_config()
     if(config is None):
