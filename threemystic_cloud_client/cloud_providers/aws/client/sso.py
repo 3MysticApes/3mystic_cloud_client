@@ -2,7 +2,7 @@ from threemystic_cloud_client.cloud_providers.aws.client.base_class.base import 
 import sys
 import os
 import boto3
-from polling2 import TimeoutException, poll
+from polling2 import TimeoutException, poll as poll2
     
 class cloud_client_aws_client_sso(base):
   def __init__(self, *args, **kwargs):
@@ -154,7 +154,7 @@ class cloud_client_aws_client_sso(base):
       )
 
     try:
-      logged_in = poll(
+      logged_in = poll2(
         lambda: not self.session_expired(refresh = True),
         ignore_exceptions=(Exception,),
         timeout=self.get_aws_poll_login(),

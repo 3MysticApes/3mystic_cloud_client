@@ -5,7 +5,7 @@ from botocore import session as botocore_session, credentials as botocore_creden
 from botocore.config import Config as botocore_config_config
 from boto3 import Session as boto_session
 from botocore.exceptions import ClientError
-from polling2 import TimeoutException, poll
+from polling2 import TimeoutException, poll as poll2
 import time
 from random import randint
 
@@ -283,7 +283,7 @@ class cloud_client_aws_client_base(base):
       )
     
     if(self.is_authenticating_session()):
-      poll(
+      poll2(
         lambda: self.is_authenticating_session(),
         ignore_exceptions=(Exception,),
         timeout=self.get_aws_poll_authenticate(),

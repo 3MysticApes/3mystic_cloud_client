@@ -4,7 +4,7 @@ from azure.core.exceptions import HttpResponseError, ClientAuthenticationError
 import time
 import math
 from abc import abstractmethod
-from polling2 import TimeoutException, poll
+from polling2 import TimeoutException, poll as poll2
 
 
 class cloud_client_provider_azure_base(base):
@@ -35,7 +35,7 @@ class cloud_client_provider_azure_base(base):
      
   def login(self, *args, **kwargs):
     if self.is_login_processing():
-      poll(
+      poll2(
         lambda: self.is_login_processing(),
         ignore_exceptions=(Exception,),
         timeout=240,
