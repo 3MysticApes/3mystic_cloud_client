@@ -30,7 +30,7 @@ class cloud_client_azure_client_cli(base):
     if self._get_credential().get(self.get_tenant_id(tenant= tenant)) is not None:
       return self._get_credential().get(self.get_tenant_id(tenant= tenant))
     
-    self._get_credential()[self.get_tenant_id(tenant= tenant)] = AzureCliCredential(tenant_id= self.get_tenant_id(tenant= tenant))        
+    self._get_credential()[self.get_tenant_id(tenant= tenant)] = AzureCliCredential(tenant_id= self.get_tenant_id(tenant= tenant))
     return self.get_tenant_credential(tenant= tenant, *args, **kwargs)
 
   
