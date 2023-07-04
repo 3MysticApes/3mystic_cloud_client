@@ -17,20 +17,7 @@ class cloud_client_azure_client_cli(base):
       on_login_function = on_login_function
     )
         
-  def get_tenant_credential(self, tenant, *args, **kwargs):
-    if self.get_common().helper_type().string().is_null_or_whitespace(string_value= self.get_tenant_id(tenant= tenant)):
-      raise self.get_common().exception().exception(
-        exception_type = "argument"
-      ).type_error(
-        logger = self.get_common().get_logger(),
-        name = "tenant_id",
-        message = f"tenant_id cannot be null or whitespace"
-      )
-
-    if self._get_credential().get(self.get_tenant_id(tenant= tenant)) is not None:
-      return self._get_credential().get(self.get_tenant_id(tenant= tenant))
-    
-    self._get_credential()[self.get_tenant_id(tenant= tenant)] = AzureCliCredential(tenant_id= self.get_tenant_id(tenant= tenant))
-    return self.get_tenant_credential(tenant= tenant, *args, **kwargs)
+  def _get_tenant_credential(self, tenant, *args, **kwargs):
+    return AzureCliCredential(tenant_id= self.get_tenant_id(tenant= tenant))
 
   

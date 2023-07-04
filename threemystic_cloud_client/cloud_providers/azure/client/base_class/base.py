@@ -3,6 +3,7 @@ from abc import abstractmethod
 from io import StringIO
 from knack.log import CLI_LOGGER_NAME
 import logging
+from polling2 import TimeoutException, poll as poll2
 from azure.core.exceptions import HttpResponseError
 from azure.cli.core import get_default_cli
 from azure.mgmt.resource.subscriptions import SubscriptionClient as ResourceSubscriptionClient
@@ -15,8 +16,52 @@ class cloud_client_azure_client_base(base):
 
   
   @abstractmethod
-  def get_tenant_credential(self, tenant = None, *args, **kwargs):
+  def _login(self, *args, **kwargs):
     pass
+
+  @abstractmethod
+  def _get_tenant_credential(self, tenant = None, *args, **kwargs):
+    pass
+
+  def login(self, *args, **kwargs):
+    if self.is_login_processing():
+      poll2(
+        lambda: self.is_login_processing(),
+        ignore_exceptions=(Exception,),
+        timeout=240,
+        step=0.1
+      )
+
+    self._start_process_login()
+    return_data = self._login(*args, **kwargs)
+    self._stop_process_login()
+
+    return return_data
+  
+  def get_tenant_credential_full(self, tenant = None, *args, **kwargs):
+    if self.get_common().helper_type().string().is_null_or_whitespace(string_value= self.get_tenant_id(tenant= tenant)):
+      raise self.get_common().exception().exception(
+        exception_type = "argument"
+      ).type_error(
+        logger = self.get_common().get_logger(),
+        name = "tenant_id",
+        message = f"tenant_id cannot be null or whitespace"
+      )
+    
+    if (self._get_credential(account_id= self.get_tenant_id(tenant= tenant)) is not None
+        and len(self._get_credential(account_id= self.get_tenant_id(tenant= tenant))) > 1):
+      return self._get_credential(account_id= self.get_tenant_id(tenant= tenant))
+    
+    credentials = self._get_tenant_credential(tenant= tenant)
+    self._get_credential(account_id= self.get_tenant_id(tenant= tenant) )["credentials"] = credentials
+    self._get_credential(account_id= self.get_tenant_id(tenant= tenant) )["jwt"] = self.decode_jwt_token(
+      token= credentials.get_token("https://graph.microsoft.com/.default").token
+    )
+
+    return self.get_tenant_credential_full(tenant= tenant, *args, **kwargs)
+  
+  def get_tenant_credential(self, tenant = None, *args, **kwargs):
+    return self.get_tenant_credential_full(tenant= tenant, *args, **kwargs).get("credentials")
          
   def get_tenants(self, refresh = False, tenant = None, *args, **kwargs):
     if tenant is None:

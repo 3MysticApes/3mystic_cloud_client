@@ -4,7 +4,7 @@ from azure.core.exceptions import HttpResponseError, ClientAuthenticationError
 import time
 import math
 from abc import abstractmethod
-from polling2 import TimeoutException, poll as poll2
+import jwt
 
 
 class cloud_client_provider_azure_base(base):
@@ -16,10 +16,14 @@ class cloud_client_provider_azure_base(base):
       "cli_doc_link": "https://learn.microsoft.com/en-us/cli/azure/install-azure-cli"
     }
 
-  
-  @abstractmethod
-  def _login(self, *args, **kwargs):
-    pass
+
+  def decode_jwt_token(self, token, *args, **kwargs):
+    alg = jwt.get_unverified_header(jwt= token)
+    return jwt.decode(
+      jwt= token,
+      algorithms= [alg],
+      options= {"verify_signature": False}
+    )
 
   def is_login_processing(self, *args, **kwargs):
     return (self.__is_processing_login is True)
@@ -32,28 +36,21 @@ class cloud_client_provider_azure_base(base):
 
   def _start_process_login(self, *args, **kwargs):
     self.__is_processing_login = True
-     
-  def login(self, *args, **kwargs):
-    if self.is_login_processing():
-      poll2(
-        lambda: self.is_login_processing(),
-        ignore_exceptions=(Exception,),
-        timeout=240,
-        step=0.1
-      )
 
-    self._start_process_login()
-    return_data = self._login(*args, **kwargs)
-    self._stop_process_login()
-
-    return return_data
-
-  def _get_credential(self, *args, **kwargs):
-    if hasattr(self, "_credentials"):
-      return self._credentials
+  
+  def _get_credential(self, account_id, unset = False, *args, **kwargs):
+    if unset is True:
+      if hasattr(self, f"_credentials_{account_id}"):
+        current_value = getattr(self, f"_credentials_{account_id}")
+        delattr(self, f"_credentials_{account_id}")
+        return current_value
+      return None
+      
+    if hasattr(self, f"_credentials_{account_id}"):
+      return getattr(self, f"_credentials_{account_id}")
     
-    self._credentials = {}
-    return self._get_credential()
+    setattr(self, f"_credentials_{account_id}", {})
+    return self._get_credential(account_id= account_id)
 
   def _clear_credential(self, *args, **kwargs):
     delattr(self, "_credentials")
