@@ -20,10 +20,6 @@ class cloud_client_aws(base):
     next_step.step()
 
   def action_config(self, *args, **kwargs):     
-    if not self.is_provider_config_completed():
-      print("Provider must be configured first")
-      self._setup_another_config()
-      return
     from threemystic_cloud_client.cloud_providers.aws.config.step_1 import cloud_client_aws_config_step_1 as step
     next_step = step(common= self.get_common(), logger= self.get_logger())
     
