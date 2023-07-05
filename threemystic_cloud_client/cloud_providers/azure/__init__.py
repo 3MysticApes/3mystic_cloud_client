@@ -13,7 +13,7 @@ class cloud_client_azure(base):
       self._setup_another_config()
       return
     
-    from threemystic_cloud_client.cloud_providers.azure.test.step_1 import cloud_client_azure_test_step_1 as test
+    from threemystic_cloud_client.cloud_providers.azure.action_test.step_1 import cloud_client_azure_test_step_1 as test
     next_step = test(common= self.get_common(), logger= self.get_logger(), *args, **kwargs)
     
     next_step.step()

@@ -1,4 +1,4 @@
-from threemystic_cloud_client.cloud_providers.azure.test.base_class.base import cloud_client_azure_test_base as base
+from threemystic_cloud_client.cloud_providers.azure.action_test.base_class.base import cloud_client_azure_test_base as base
 from threemystic_common.base_class.generate_data.generate_data_handlers import generate_data_handlers
 
 

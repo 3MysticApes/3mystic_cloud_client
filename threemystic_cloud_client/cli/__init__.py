@@ -74,7 +74,7 @@ class cloud_client_cli(base_process_options):
       return
 
     if force_action == "test":
-      from threemystic_cloud_client.cli.actions.test import cloud_client_test as user_action
+      from threemystic_cloud_client.cli.actions.action_test import cloud_client_test as user_action
       user_action(cloud_client= self._cloud_client).main(provider= self._client_provider)
       return
 

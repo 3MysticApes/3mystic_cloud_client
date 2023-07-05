@@ -1,4 +1,4 @@
-from threemystic_cloud_client.cloud_providers.aws.test.base_class.base import cloud_client_aws_test_base as base
+from threemystic_cloud_client.cloud_providers.aws.action_test.base_class.base import cloud_client_aws_test_base as base
 from threemystic_common.base_class.generate_data.generate_data_handlers import generate_data_handlers
 
 
@@ -35,7 +35,7 @@ class cloud_client_aws_test_step_1(base):
       print(f"Profile Not Found: {response['profile'].get('formated')}")
       return
 
-    from threemystic_cloud_client.cloud_providers.aws.test.step_2 import cloud_client_aws_test_step_2 as nextstep
+    from threemystic_cloud_client.cloud_providers.aws.action_test.step_2 import cloud_client_aws_test_step_2 as nextstep
     nextstep(init_object = self).step( profile_name= response['profile'].get('formated'))
     
   
