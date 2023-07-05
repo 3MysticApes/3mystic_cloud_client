@@ -184,8 +184,8 @@ class cloud_client_azure_client_base(base):
     
     if len(accounts) < 1:
       return None
-  
-    resource_client = ResourceGraphClient(self.get_tenant_credential(tenant= tenant))
+
+    resource_client = ResourceGraphClient(credential= self.get_tenant_credential(tenant= tenant))
     resource_query_options = QueryRequestOptions(result_format="objectArray")
     
     resource_query = QueryRequest(subscriptions=[self.get_account_id(account= acct) for acct in accounts], query="resourcecontainers | where type == 'microsoft.resources/subscriptions'", options=resource_query_options)
@@ -198,8 +198,7 @@ class cloud_client_azure_client_base(base):
       ).type_error(
         logger = self.get_common().get_logger(),
         name = "AccessDenied",
-        message = f"Could not query ResourceGraphClient",
-        exception= err
+        message = f"Could not query ResourceGraphClient - {err.response.status_code}: {err.response.text}",
       )
     except Exception as err:
       raise self.get_common().exception().exception(
@@ -207,8 +206,7 @@ class cloud_client_azure_client_base(base):
       ).type_error(
         logger = self.get_common().get_logger(),
         name = "GeneralException",
-        message = f"Could not query ResourceGraphClient",
-        exception= err
+        message = f"Could not query ResourceGraphClient - {err}",
       )
     
   def __get_accounts_resourcecontainers_managementgroups(self, tenant, *args, **kwargs):  
