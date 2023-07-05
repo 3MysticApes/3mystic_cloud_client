@@ -13,31 +13,32 @@ class cloud_client_provider_base(base):
   def _post_init(self, *args, **kwargs):
     pass
 
-  def _setup_another_config(self):
-    response = self.get_common().generate_data().generate(
-      generate_data_config = {
-        "repeat_config": {
-            "validation": lambda item: self.get_common().helper_type().bool().is_bool(check_value= item),
-            "messages":{
-              "validation": f"Valid options for Yes are: {self.get_common().helper_type().bool().is_true_values()}",
-            },
-            "conversion": lambda item: self.get_common().helper_type().bool().is_true(check_value= item),
-            "desc": f"Do you want to setup another provider?: {self.get_common().helper_type().bool().is_true_values()}",
-            "default": None,
-            "handler": generate_data_handlers.get_handler(handler= "base"),
-            "optional": True
+  def _setup_another_config(self, force_config = False, *args, **kwargs):
+    if not force_config:
+      response = self.get_common().generate_data().generate(
+        generate_data_config = {
+          "repeat_config": {
+              "validation": lambda item: self.get_common().helper_type().bool().is_bool(check_value= item),
+              "messages":{
+                "validation": f"Valid options for Yes are: {self.get_common().helper_type().bool().is_true_values()}",
+              },
+              "conversion": lambda item: self.get_common().helper_type().bool().is_true(check_value= item),
+              "desc": f"Do you want to setup another provider?: {self.get_common().helper_type().bool().is_true_values()}",
+              "default": None,
+              "handler": generate_data_handlers.get_handler(handler= "base"),
+              "optional": True
+          }
         }
-      }
-    )
+      )
 
-    if response is None:
-      return
-    
-    if response.get("repeat_config") is None:
-      return
-    
-    if response.get("repeat_config").get("formated") is not True:
-      return
+      if response is None:
+        return
+      
+      if response.get("repeat_config") is None:
+        return
+      
+      if response.get("repeat_config").get("formated") is not True:
+        return
     
     print()
     print()
