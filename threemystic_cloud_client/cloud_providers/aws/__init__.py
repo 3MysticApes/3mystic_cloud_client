@@ -14,7 +14,7 @@ class cloud_client_aws(base):
       print("Provider must be configured first")
       self._setup_another_config()
       return
-    from threemystic_cloud_client.cloud_providers.aws.test_config.step_1 import cloud_client_aws_test_step_1 as test
+    from threemystic_cloud_client.cloud_providers.aws.test.step_1 import cloud_client_aws_test_step_1 as test
     next_step = test(common= self.get_common(), logger= self.get_logger(), *args, **kwargs)
     
     next_step.step()
