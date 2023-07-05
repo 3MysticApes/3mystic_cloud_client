@@ -1,11 +1,10 @@
 import sys
 from threemystic_common.base_class.base_script_options import base_process_options
-
+from threemystic_cloud_client.cloud_client import cloud_client as threemystic_client
 
 class cloud_client_cli(base_process_options):
-  def __init__(self, *args, **kwargs):
-    from threemystic_cloud_client.cloud_client import cloud_client
-    self._cloud_client = cloud_client()
+  def __init__(self, cloud_client = None, *args, **kwargs):    
+    self._cloud_client = threemystic_client() if cloud_client is None else cloud_client
     
     super().__init__(common= self._cloud_client.get_common(), *args, **kwargs)
 

@@ -1,5 +1,7 @@
 from threemystic_common.base_class.base_provider import base
 from abc import abstractmethod
+from threemystic_common.base_class.generate_data.generate_data_handlers import generate_data_handlers
+from threemystic_cloud_client.cli import cloud_client_cli
 
 class cloud_client_provider_base(base):
   def __init__(self, *args, **kwargs):
@@ -10,13 +12,47 @@ class cloud_client_provider_base(base):
   
   def _post_init(self, *args, **kwargs):
     pass
+
+  def _setup_another_config(self):
+    response = self.get_common().generate_data().generate(
+      generate_data_config = {
+        "repeat_config": {
+            "validation": lambda item: self.get_common().helper_type().bool().is_bool(check_value= item),
+            "messages":{
+              "validation": f"Valid options for Yes are: {self.get_common().helper_type().bool().is_true_values()}",
+            },
+            "conversion": lambda item: self.get_common().helper_type().bool().is_true(check_value= item),
+            "desc": f"Do you want to setup another provider?: {self.get_common().helper_type().bool().is_true_values()}",
+            "default": None,
+            "handler": generate_data_handlers.get_handler(handler= "base"),
+            "optional": True
+        }
+      }
+    )
+
+    if response is None:
+      return
+    
+    if response.get("repeat_config") is None:
+      return
+    
+    if response.get("repeat_config").get("formated") is not True:
+      return
+    
+    print()
+    print()
+    print("-------------------------------------------------------------------------")
+    print()
+    print()
+
+    cloud_client_cli().process_client_action("config")
   
   def update_provider_config_completed(self, status, *args, **kwargs):
     self.get_config()["_config_process"] = status
     self._save_config()
   
   def is_provider_config_completed(self, *args, **kwargs):
-    return self.get_config().get("_config_process") is True
+    return self.get_config().get("_config_process") is True and self.is_cli_installed()
   
   def get_main_directory_name(self, *args, **kwargs):
     return "client"
@@ -102,7 +138,7 @@ class cloud_client_provider_base(base):
   
   def _save_config(self, *args, **kwargs):
      if not self.config_path().parent.exists():
-       self.config_path().mkdir(parents= True)
+       self.config_path().parent.mkdir(parents= True)
      self.config_path().write_text(
       data= self.get_common().helper_yaml().dumps(data= self.get_config())
      )

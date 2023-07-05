@@ -6,6 +6,12 @@ class cloud_client_aws_config_step_2(base):
   def __init__(self, *args, **kwargs):
     super().__init__(logger_name= "cloud_client_aws_config_step_2", *args, **kwargs)
 
+  def step_done(self, *args, **kwargs):
+    
+    self.update_provider_config_completed(status= True)
+    self._setup_another_config()
+
+
   def step(self, is_new_config, *args, **kwargs):
 
     if not super().step():
@@ -204,7 +210,7 @@ class cloud_client_aws_config_step_2(base):
         },
         "sso_profile_name": {
           "validation": lambda item: self.__step_process_sso_valid_profile(profile_name= item, existing_profile= existing_sso_profile_name),
-          "allow_empty": True,
+          "allow_empty": False,
           "skip": lambda item: item.get("use_cli_profile").get("formatted") if item is not None and item.get("use_cli_profile") is not None else False,
           "messages":{
             "validation": f"Could not find profile.",
@@ -213,7 +219,7 @@ class cloud_client_aws_config_step_2(base):
           "desc": f"Enter the SSO Profile Name{self.__get_existing_text(exiting_value= existing_sso_profile_name)}",
           "handler": generate_data_handlers.get_handler(handler= "base"),
           "default": profile_data.get("sso_profile_name"),
-          "optional": False
+          "optional": not self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_data.get("sso_profile_name"))
         },
         "sso_start_url": {
           "validation": lambda item: item,
@@ -227,7 +233,7 @@ class cloud_client_aws_config_step_2(base):
         },
         "sso_region": {
           "validation": lambda item: item,
-          "skip": lambda item: not item.get("use_cli_profile").get("formatted") if item is not None and item.get("use_cli_profile") is not None else True,
+          "skip": lambda item: not item.get("use_cli_profile").get("formatted") is not True if item is not None and item.get("use_cli_profile") is not None else True,
           "allow_empty": True,
           "messages":{},
           "conversion": lambda item: self.get_common().helper_type().string().trim(item),
@@ -297,6 +303,8 @@ class cloud_client_aws_config_step_2(base):
     
     self.update_config_profile(profile_name= profile_name, profile_data= profile_data)
     print(f"Profile ({profile_name} saved/updated)")
+    self.step_done()
+    
 
     
   

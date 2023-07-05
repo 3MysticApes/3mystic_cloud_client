@@ -32,6 +32,7 @@ class cloud_client_aws_config_step_1(base):
     if response is None:
       return
 
+    self.update_provider_config_completed(status= "step1")
     nextstep(init_object = self).step(is_new_config= response["type"].get("formated") == True)
     
   
