@@ -11,6 +11,13 @@ class cloud_client_provider_base(base):
   def _post_init(self, *args, **kwargs):
     pass
   
+  def update_provider_config_completed(self, status, *args, **kwargs):
+    self.get_config()["_config_process"] = status
+    self._save_config()
+  
+  def is_provider_config_completed(self, *args, **kwargs):
+    return self.get_config().get("_config_process") is True
+  
   def get_main_directory_name(self, *args, **kwargs):
     return "client"
 
@@ -90,6 +97,17 @@ class cloud_client_provider_base(base):
     
     return self.get_config_profile_name(*args, **kwargs) != None
   
+  def _update_config(self,config_key, config_value, refresh= False,  *args, **kwargs):
+     self.get_config(refresh = True)[config_key] = config_value
+  
+  def _save_config(self, *args, **kwargs):
+     if not self.config_path().parent.exists():
+       self.config_path().mkdir(parents= True)
+     self.config_path().write_text(
+      data= self.get_common().helper_yaml().dumps(data= self.get_config())
+     )
+     self.get_config(refresh = True)
+
   def get_config(self, refresh = False, *args, **kwargs):
     if hasattr(self, "_config_data") and not refresh:
       return self._config_data
@@ -105,14 +123,6 @@ class cloud_client_provider_base(base):
       return config_value
     
     return default_if_none
-  
-  def _save_config(self, *args, **kwargs):
-     if not self.config_path().parent.exists():
-       self.config_path().mkdir(parents= True)
-     self.config_path().write_text(
-      data= self.get_common().helper_yaml().dumps(data= self.get_config())
-     )
-     self.get_config(refresh = True)
 
   def has_config_profiles(self, *args, **kwargs):
     

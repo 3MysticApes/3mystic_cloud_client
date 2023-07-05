@@ -14,6 +14,9 @@ class cloud_client_azure_config_step_1(base):
     
     print("Currently this app integrates directly with the azure cli. So as long as the CLI is installed the base is done.")
     print()
+
+    if self.is_cli_installed() != True:
+      self.update_provider_config_completed(status= True)
     
     
   
