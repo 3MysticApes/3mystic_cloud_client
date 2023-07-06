@@ -6,6 +6,7 @@ class cloud_client_aws_client_auto(base):
 
     self.__set_profile(*args, **kwargs)
   
+  
   def get_profile(self, *args, **kwargs):
     if(not hasattr(self, "_profile")):
       raise self.get_common().exception().exception(

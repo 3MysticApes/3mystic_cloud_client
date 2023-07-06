@@ -15,6 +15,10 @@ class cloud_client_aws_client_base(base):
 
     self.__set_profile(*args, **kwargs)
   
+  @abstractmethod
+  def _session_expired(self, refresh = False, *args, **kwargs):
+    pass
+
   def _get_boto_client_key(self, client, account = None, region = None, *args, **kwargs):
     
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= region):
@@ -266,11 +270,11 @@ class cloud_client_aws_client_base(base):
 
     return self._assume_role(**kwargs)
   
-  def session_expired(self, *args, **kwargs):
-    return self._session_expired(*args, **kwargs)
+  def session_expired(self, refresh = False, *args, **kwargs):
+    return self._session_expired(refresh= refresh, *args, **kwargs)
   
   def ensure_session(self, count = 0, *args, **kwargs):
-    if(not self.session_expired()):
+    if(not self.session_expired(refresh = False if count == 0 else True)):
       return
     
     if count > 5:
@@ -465,6 +469,15 @@ class cloud_client_aws_client_base(base):
     return list(dict.fromkeys(account_list))
   
   def get_accounts(self, account = None, refresh = False, include_suspended = False):
+    if not self.ensure_session():
+      raise self.get_common().exception().exception(
+          exception_type = "generic"
+        ).type_error(
+          logger = self.get_common().get_logger(),
+          name = "SessionInvalid",
+          message = f"get_accounts: could not get accounts because session is not valid"
+        )
+    
     all_accounts = self._get_accounts(refresh=refresh, include_suspended=include_suspended)
     if account is None:
       return all_accounts
