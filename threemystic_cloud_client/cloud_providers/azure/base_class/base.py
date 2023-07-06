@@ -5,7 +5,7 @@ import time
 import math
 from abc import abstractmethod
 import jwt
-
+from polling2 import TimeoutException, poll as poll2
 
 class cloud_client_provider_azure_base(base):
   def __init__(self, *args, **kwargs):
@@ -16,7 +16,26 @@ class cloud_client_provider_azure_base(base):
       "cli_doc_link": "https://learn.microsoft.com/en-us/cli/azure/install-azure-cli"
     }
 
+  
+  @abstractmethod
+  def _login(self, *args, **kwargs):
+    pass
 
+  def login(self, *args, **kwargs):
+    if self.is_login_processing():
+      poll2(
+        lambda: self.is_login_processing(),
+        ignore_exceptions=(Exception,),
+        timeout=240,
+        step=0.1
+      )
+
+    self._start_process_login()
+    return_data = self._login(*args, **kwargs)
+    self._stop_process_login()
+
+    return return_data
+  
   def decode_jwt_token(self, token, *args, **kwargs):
     alg = jwt.get_unverified_header(jwt= token)
     return jwt.decode(
@@ -53,7 +72,8 @@ class cloud_client_provider_azure_base(base):
     return self._get_credential(account_id= account_id)
 
   def _clear_credential(self, *args, **kwargs):
-    delattr(self, "_credentials")
+    if hasattr(self, "_credentials"):
+      delattr(self, "_credentials")
   
   def check_request_too_many_requests(self, exception, *args, **kwargs):
     if not self.get_common().helper_type().general().is_type(obj= exception, type_check= HttpResponseError):
@@ -73,6 +93,15 @@ class cloud_client_provider_azure_base(base):
         if "az login" in self.get_common().helper_type().string().set_case(string_value= (HttpResponseError(exception)).message, case= "lower"):
           return True
     
+    if self.get_common().helper_type().general().is_type(obj= exception, type_check= str):
+      exception = self.get_common().helper_type().string().set_case(
+        string_value= exception, 
+        case= "lower"
+      )
+      for exceptions_str in ["please run 'az login' to setup account"]:
+        if exceptions_str in exception:
+          return True
+      
     # as I learn better exceptions I want to make sure I am trackign
     # if self.get_common().helper_type().general().is_type(obj= exception, type_check= ClientAuthenticationError): 
        

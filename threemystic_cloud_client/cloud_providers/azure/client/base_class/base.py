@@ -3,7 +3,6 @@ from abc import abstractmethod
 from io import StringIO
 from knack.log import CLI_LOGGER_NAME
 import logging
-from polling2 import TimeoutException, poll as poll2
 from azure.core.exceptions import HttpResponseError
 from azure.cli.core import get_default_cli
 from azure.mgmt.resource.subscriptions import SubscriptionClient as ResourceSubscriptionClient
@@ -16,27 +15,8 @@ class cloud_client_azure_client_base(base):
 
   
   @abstractmethod
-  def _login(self, *args, **kwargs):
-    pass
-
-  @abstractmethod
   def _get_tenant_credential(self, tenant = None, *args, **kwargs):
     pass
-
-  def login(self, *args, **kwargs):
-    if self.is_login_processing():
-      poll2(
-        lambda: self.is_login_processing(),
-        ignore_exceptions=(Exception,),
-        timeout=240,
-        step=0.1
-      )
-
-    self._start_process_login()
-    return_data = self._login(*args, **kwargs)
-    self._stop_process_login()
-
-    return return_data
   
   def get_tenant_credential_full(self, tenant = None, *args, **kwargs):
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= self.get_tenant_id(tenant= tenant)):
@@ -65,7 +45,7 @@ class cloud_client_azure_client_base(base):
          
   def get_tenants(self, refresh = False, tenant = None, *args, **kwargs):
     if tenant is None:
-      return self.__get_tenants()
+      return self.__get_tenants(refresh= refresh)
     
     if self.get_common().helper_type().general().is_type(obj= tenant, type_check= str) and not self.get_common().helper_type().string().is_null_or_whitespace(string_value= tenant):
       tenant = [ acct.strip() for acct in self.get_common().helper_type().string().split(string_value= tenant) if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= acct) ]
@@ -87,12 +67,12 @@ class cloud_client_azure_client_base(base):
     return_result = self._az_cli(bashCall, on_login_function = lambda: self.get_tenants(refresh = refresh))
 
     if len(return_result["error"])>0:
-      if return_result["exit_code"] != 0:
-          raise Exception(return_result["error"])
+      if return_result.get("exit_code") != 0:
+        raise Exception(return_result["error"])
       else:
-          logging.warning(msg=return_result["error"])
+        logging.warning(msg=return_result["error"])
 
-    self._tenants = return_result["result"]
+    self._tenants = return_result.get("result")
     return self.__get_tenants()
   
 
@@ -110,6 +90,7 @@ class cloud_client_azure_client_base(base):
           logging.warning(msg=return_result["error"])
 
     self._raw_accounts = return_result["result"]
+    
     return self.__get_raw_accounts()
   
   def get_group_accounts_by_tenant(self, accountList = None, refresh= False, *args, **kwargs):
@@ -292,7 +273,8 @@ class cloud_client_azure_client_base(base):
         
     except SystemExit as ex:
       exit_code = ex.code
-      
+    
+    error_message = log_buffer.getvalue()
     if exit_code == 0:
       if az_cli_args[0].lower() == "login":
         self._clear_credential()
@@ -300,14 +282,20 @@ class cloud_client_azure_client_base(base):
           # look to update this to pull a page of subscriptions and put this in some sort of loop to retry
           # thought create a validate login method.
           return on_login_function()
-      
+    
       return {
         "exit_code": exit_code,
         "result": self.get_common().helper_json().loads(data= stdout_buffer.getvalue()) if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= stdout_buffer.getvalue()) else None,
-        "error": log_buffer.getvalue()
+        "error": error_message
       }
     
+    
+    
+    if self.check_request_error_login(exception= error_message):
+      return self._az_cli("az login", on_login_function = on_login_function)
+    
     return {
+      "exit_code": exit_code,
       "result": self.get_common().helper_json().loads(data= stdout_buffer.getvalue()) if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= stdout_buffer.getvalue()) else None,
-      "error": log_buffer.getvalue()
+      "error": error_message
     }

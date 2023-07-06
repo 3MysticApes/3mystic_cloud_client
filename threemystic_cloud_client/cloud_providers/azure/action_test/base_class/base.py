@@ -4,6 +4,9 @@ class cloud_client_azure_test_base(base):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
+  def _login(self, *args, **kwargs):
+    pass
+  
   def step(self, *args, **kwargs):
     if self.is_cli_installed() != True:
       from threemystic_cloud_client.cli import cloud_client_cli

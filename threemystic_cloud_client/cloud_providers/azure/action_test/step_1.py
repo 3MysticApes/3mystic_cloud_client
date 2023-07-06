@@ -23,5 +23,15 @@ class cloud_client_azure_test_step_1(base):
     print(f"You have the following accounts:")
     for account in azure_client.get_accounts():
       print(f"{azure_client.get_account_id(account= account)}:{azure_client.get_account_name(account= account)}")
-    
+
+    print()
+    print()
+    print("--------------------------------")
+    print()
+    print()
+    print("If not all your accounts are listing please run ")
+    for tenant in azure_client.get_tenants():
+      print(f"az login --tenant {azure_client.get_tenant_id(tenant= tenant)}")
+
+    print(f"az account list --refresh")
   
