@@ -1,6 +1,7 @@
 from threemystic_cloud_client.cloud_providers.base_class.base import cloud_client_provider_base as base
 from azure.mgmt.costmanagement.models import TimeframeType, OperatorType, QueryColumnType, QueryDefinition, QueryTimePeriod, QueryDataset, QueryAggregation, QueryGrouping, QueryFilter, QueryComparisonExpression
 from azure.core.exceptions import HttpResponseError, ClientAuthenticationError
+from azure.identity._exceptions import CredentialUnavailableError
 import time
 import math
 from abc import abstractmethod
@@ -18,7 +19,7 @@ class cloud_client_provider_azure_base(base):
 
   
   @abstractmethod
-  def _login(self, *args, **kwargs):
+  def _login(self, on_login_function = None, tenant = None, *args, **kwargs):
     pass
 
   def login(self, *args, **kwargs):
@@ -88,11 +89,21 @@ class cloud_client_provider_azure_base(base):
     return False
   
   def check_request_error_login(self, exception, *args, **kwargs):
-    if self.get_common().helper_type().general().is_type(obj= exception, type_check= HttpResponseError):    
+
+    if self.get_common().helper_type().general().is_type(obj= exception, type_check= CredentialUnavailableError):    
+      if "az login" in self.get_common().helper_type().string().set_case(string_value= (CredentialUnavailableError(exception)).message, case= "lower"):
+        return True
+        
+    if self.get_common().helper_type().general().is_type(obj= exception, type_check= CredentialUnavailableError):    
       if (HttpResponseError(exception)).status_code is None:
         if "az login" in self.get_common().helper_type().string().set_case(string_value= (HttpResponseError(exception)).message, case= "lower"):
           return True
     
+    
+    if self.get_common().helper_type().general().is_type(obj= exception, type_check= Exception):    
+      if "az login" in self.get_common().helper_type().string().set_case(string_value= f'{exception}', case= "lower"):
+        return True
+      
     if self.get_common().helper_type().general().is_type(obj= exception, type_check= str):
       exception = self.get_common().helper_type().string().set_case(
         string_value= exception, 

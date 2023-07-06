@@ -29,9 +29,11 @@ class cloud_client_azure_test_step_1(base):
     print("--------------------------------")
     print()
     print()
-    print("If not all your accounts are listing please run ")
+    print("If not all your accounts are listing you can try the commands below. ")
+    print("If accounts are still missing please log into the portal and verify all the tenants. It is possible they are missing from the CLI.")
     for tenant in azure_client.get_tenants():
       print(f"az login --tenant {azure_client.get_tenant_id(tenant= tenant)}")
 
     print(f"az account list --refresh")
+    
   

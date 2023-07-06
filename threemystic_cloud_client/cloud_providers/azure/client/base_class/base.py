@@ -33,10 +33,39 @@ class cloud_client_azure_client_base(base):
       return self._get_credential(account_id= self.get_tenant_id(tenant= tenant))
     
     credentials = self._get_tenant_credential(tenant= tenant)
+    try:
+      jwt_token = self.decode_jwt_token(
+        token= credentials.get_token("https://graph.microsoft.com/.default").token
+      )
+    except Exception as err:
+      jwt_token = None
+      self.get_common().get_logger().exception(
+        msg= "could not generate token to decode",
+        extra= {
+          "exception": err
+        }
+      )
+      if self.check_request_error_login(exception= err):      
+        credentials = self._login(
+          tenant = tenant,
+          on_login_function = lambda: self._get_tenant_credential(tenant= tenant)
+        )
+        try:
+          jwt_token = self.decode_jwt_token(
+            token= credentials.get_token("https://graph.microsoft.com/.default").token
+          )
+        except Exception as reattempt_err:
+          jwt_token = None
+          
+          self.get_common().get_logger().exception(
+            msg= "reattempt: could not generate token to decode",
+            extra= {
+              "exception": reattempt_err
+            }
+          )
+    
     self._get_credential(account_id= self.get_tenant_id(tenant= tenant) )["credentials"] = credentials
-    self._get_credential(account_id= self.get_tenant_id(tenant= tenant) )["jwt"] = self.decode_jwt_token(
-      token= credentials.get_token("https://graph.microsoft.com/.default").token
-    )
+    self._get_credential(account_id= self.get_tenant_id(tenant= tenant) )["jwt"] = jwt_token
 
     return self.get_tenant_credential_full(tenant= tenant, *args, **kwargs)
   
