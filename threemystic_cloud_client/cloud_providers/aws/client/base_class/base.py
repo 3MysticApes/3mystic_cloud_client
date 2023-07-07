@@ -380,14 +380,14 @@ class cloud_client_aws_client_base(base):
     return self._get_created_boto_clients()[cache_key]
 
   def _convert_assume_role_credentials_boto_session(self, credentials):
-    experation = credentials["Expiration"]
+    experation = credentials["expiration"]
     if self.get_common().helper_type().general().is_type(obj= experation, type_check= str):
       experation = self.get_common().helper_type().datetime().parse_iso(iso_datetime_str=experation)
     
     return {
-        "access_key": credentials["AccessKeyId"],
-        "secret_key": credentials["SecretAccessKey"],
-        "token": credentials["SessionToken"],
+        "access_key": credentials["accessKeyId"],
+        "secret_key": credentials["secretAccessKey"],
+        "token": credentials["sessionToken"],
         "expiry_time": f"{experation}+00:00" 
       }
 

@@ -50,7 +50,6 @@ class cloud_client_aws_test_step_1(base):
     if not super().step( *args, **kwargs):
       return
     
-    print(self._processed_arg_info.get("test_profile"))
     if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._processed_arg_info.get("test_profile")):
       if self.config_profile_name_exists(profile_name= self._processed_arg_info.get("test_profile")):
         return nextstep(init_object = self).step( profile_name= self._processed_arg_info.get("test_profile"))
