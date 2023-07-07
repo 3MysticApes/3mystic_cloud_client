@@ -105,19 +105,20 @@ class cloud_client_aws_client_sso(base):
       return self._aws_config_profile_credentials_expires
 
     if(self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._get_sso_profile_credentials()['expiresAt']) ):
-      return self.get_common().helper_type().datetime().timedelta(totalSecondAddTime= -300, time_zone="utc")
+      return (self.get_common().helper_type().datetime().get() - self.get_common().helper_type().datetime().time_delta(totalSecondAddTime= 300))
     
     self._aws_config_profile_credentials_expires = self.get_common().helper_type().datetime().convert_utc(
-      dt= self.get_common().helper_type().datetime().parse_iso(iso_datetime_str= self._get_sso_profile_credentials()['expiresAt'])
+      dt= (self.get_common().helper_type().datetime().parse_iso(iso_datetime_str= self._get_sso_profile_credentials()['expiresAt']
+      - self.get_common().helper_type().datetime().time_delta(totalSecondAddTime= 300)))
     )
     return self._get_session_expires()
     
   def _session_expired(self, refresh = False, *args, **kwargs):
-    
+
     if(self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._get_sso_profile_credentials(refresh= refresh)['expiresAt']) ):
       return True
 
-    return self.get_common().helper_type().datetime().is_token_expired_now(compare_datetime= self._get_session_expires())
+    return self.get_common().helper_type().datetime().is_token_expired_now(compare_datetime= self._get_session_expires(refresh= refresh))
     
     
   def authenticate_session(self, *args, **kwargs):

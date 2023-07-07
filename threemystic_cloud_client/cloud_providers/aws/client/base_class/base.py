@@ -427,6 +427,15 @@ class cloud_client_aws_client_base(base):
       if self._account_list is not None and len(self._account_list) > 0:
         return self._account_list[return_list]
     
+    if not self.ensure_session():
+      raise self.get_common().exception().exception(
+          exception_type = "generic"
+        ).type_error(
+          logger = self.get_common().get_logger(),
+          name = "SessionInvalid",
+          message = f"get_accounts: could not get accounts because session is not valid"
+        )
+    
     self._account_list = {
       "all": self.general_boto_call_array(
         boto_call=lambda item: self._get_organization_client().list_accounts(**item),
@@ -468,16 +477,7 @@ class cloud_client_aws_client_base(base):
     
     return list(dict.fromkeys(account_list))
   
-  def get_accounts(self, account = None, refresh = False, include_suspended = False):
-    if not self.ensure_session():
-      raise self.get_common().exception().exception(
-          exception_type = "generic"
-        ).type_error(
-          logger = self.get_common().get_logger(),
-          name = "SessionInvalid",
-          message = f"get_accounts: could not get accounts because session is not valid"
-        )
-    
+  def get_accounts(self, account = None, refresh = False, include_suspended = False):    
     all_accounts = self._get_accounts(refresh=refresh, include_suspended=include_suspended)
     if account is None:
       return all_accounts
