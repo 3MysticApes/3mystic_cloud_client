@@ -275,7 +275,7 @@ class cloud_client_aws_client_base(base):
   
   def ensure_session(self, count = 0, *args, **kwargs):
     if(not self.session_expired()):
-      return
+      return True
     
     if count > 5:
       raise self.get_common().exception().exception(
