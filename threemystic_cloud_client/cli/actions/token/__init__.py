@@ -35,6 +35,15 @@ class cloud_client_token(base):
             "help": "The AWS Account ID to generate access token information for",
             "action": 'store'
           }
+        },
+        {
+          "--profile": {
+            "default": None, 
+            "type": str,
+            "dest": "token_profile",
+            "help": "The 3Mystic profile to use.",
+            "action": 'store'
+          }
         }
       ])
     )

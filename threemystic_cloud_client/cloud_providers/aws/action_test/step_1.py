@@ -1,17 +1,61 @@
 from threemystic_cloud_client.cloud_providers.aws.action_test.base_class.base import cloud_client_aws_test_base as base
 from threemystic_common.base_class.generate_data.generate_data_handlers import generate_data_handlers
-
+from threemystic_cloud_client.cloud_providers.aws.action_test.step_2 import cloud_client_aws_test_step_2 as nextstep
+from threemystic_common.base_class.base_script_options import base_process_options
+import textwrap, argparse
 
 class cloud_client_aws_test_step_1(base):
   def __init__(self, *args, **kwargs):
     super().__init__(logger_name= "cloud_client_aws_test", *args, **kwargs)
-    
+
+    self._process_options = base_process_options(common= self.get_common())
+    self._token_parser_args = {   }
+
+    self._process_cli_args()
+  
+  def _process_cli_args(self, *args, **kwargs):
+    parser = self._process_options.get_parser(
+      parser_init_kwargs = {
+        "prog": "3mystic_cloud_client --test -p aws",
+        "formatter_class": argparse.RawDescriptionHelpFormatter,
+        "description": textwrap.dedent('''\
+        Tests the profile configuration
+        '''),
+        "add_help": False,
+        "epilog": ""
+      },
+      parser_args = self.get_common().helper_type().dictionary().merge_dictionary([
+        {},
+        self._token_parser_args,
+        {
+          "--profile": {
+            "default": None, 
+            "type": str,
+            "dest": "test_profile",
+            "help": "The 3Mystic profile to use.",
+            "action": 'store'
+          }
+        }
+      ])
+    )
+
+
+    processed_arg_info = self._process_options.process_opts(
+      parser = parser
+    )
+
+    self._processed_arg_info = processed_arg_info.get("processed_data")
 
   def step(self, *args, **kwargs):
     if not super().step( *args, **kwargs):
       return
     
-    
+    print(self._processed_arg_info.get("test_profile"))
+    if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._processed_arg_info.get("test_profile")):
+      if self.config_profile_name_exists(profile_name= self._processed_arg_info.get("test_profile")):
+        return nextstep(init_object = self).step( profile_name= self._processed_arg_info.get("test_profile"))
+
+
     response = self.get_common().generate_data().generate(
       generate_data_config = {
         "profile": {
@@ -35,7 +79,7 @@ class cloud_client_aws_test_step_1(base):
       print(f"Profile Not Found: {response['profile'].get('formated')}")
       return
 
-    from threemystic_cloud_client.cloud_providers.aws.action_test.step_2 import cloud_client_aws_test_step_2 as nextstep
+    
     nextstep(init_object = self).step( profile_name= response['profile'].get('formated'))
     
   

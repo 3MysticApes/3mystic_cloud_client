@@ -68,12 +68,14 @@ class cloud_client_aws_client_sso(base):
   
   def _get_sso_profile_credentials(self, refresh = False, *args, **kwargs):   
     if(hasattr(self, "_aws_config_profile_credentials") and (not refresh)):
-      return self._aws_config_profile_credentials
+      if len(self._aws_config_profile_credentials) > 0:
+        return self._aws_config_profile_credentials
     
     cache_key = f'{self.get_common().encryption().hash(hash_method="sha1").generate_hash(data= self._get_aws_sso_config_profile(refresh= refresh)["sso_start_url"])}.json' 
     
     sso_token_file = self.get_aws_user_path().joinpath('sso', 'cache', cache_key)
     
+    self._aws_config_profile_credentials = {}
     if not self.get_common().helper_path().is_file(sso_token_file):
       raise self.get_common().exception().exception(
         exception_type = "generic"
@@ -82,10 +84,12 @@ class cloud_client_aws_client_sso(base):
         name = f"NOT FOUND",
         message = f"Token File not found or not valid file: {sso_token_file}"
       )
-      
+    
     with sso_token_file.open(mode="r") as sso_cache:
       self._aws_config_profile_credentials = self.get_common().helper_json().loads(data= sso_cache.read())
 
+    return self._get_sso_profile_credentials()
+  
   def __internal_load_base_configs_ssoprofile(self, *args, **kwargs):
     self._get_sso_profile_credentials()
 
@@ -105,12 +109,13 @@ class cloud_client_aws_client_sso(base):
       return self._aws_config_profile_credentials_expires
 
     if(self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._get_sso_profile_credentials(refresh= refresh).get("expiresAt")) ):
-      return (self.get_common().helper_type().datetime().get() - self.get_common().helper_type().datetime().time_delta(totalSecondAddTime= 300))
+      return (self.get_common().helper_type().datetime().get() - self.get_common().helper_type().datetime().time_delta(seconds= 300))
     
-    self._aws_config_profile_credentials_expires = self.get_common().helper_type().datetime().convert_utc(
-      dt= (self.get_common().helper_type().datetime().parse_iso(iso_datetime_str= self._get_sso_profile_credentials().get("expiresAt")
-      - self.get_common().helper_type().datetime().time_delta(totalSecondAddTime= 300)))
+    self._aws_config_profile_credentials_expires = (self.get_common().helper_type().datetime().convert_utc(
+      dt= self.get_common().helper_type().datetime().parse_iso(iso_datetime_str= self._get_sso_profile_credentials().get("expiresAt")))
+      - self.get_common().helper_type().datetime().time_delta(seconds= 300)
     )
+
     return self._get_session_expires()
     
   def _session_expired(self, refresh = False, *args, **kwargs):
