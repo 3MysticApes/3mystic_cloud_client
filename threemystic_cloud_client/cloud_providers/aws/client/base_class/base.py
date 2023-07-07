@@ -68,8 +68,13 @@ class cloud_client_aws_client_base(base):
 
     return f'{self.get_account_id(account= account)}_{role}'
 
-  def _get_assumed_role_credentials(self, *args, **kwargs):
+  def _get_assumed_role_credentials(self, unset = False, *args, **kwargs):
     if(hasattr(self, "_assumed_role_credentials")):
+      if unset:
+        current = self._assumed_role_credentials
+        delattr(self, "_assumed_role_credentials")
+        return current
+      
       return self._assumed_role_credentials
     
     self._assumed_role_credentials = {}
@@ -266,7 +271,7 @@ class cloud_client_aws_client_base(base):
   def assume_role(self, *args, **kwargs):
     self.ensure_session()
     if kwargs.get("account") is not None and self.get_common().helper_type().general().is_type(obj= kwargs["account"], type_check= str):
-      kwargs["account"] = self.make_account(Id= kwargs["account"])     
+      kwargs["account"] = self.make_account(Id= kwargs["account"]) 
 
     return self._assume_role(**kwargs)
   
@@ -310,6 +315,7 @@ class cloud_client_aws_client_base(base):
   
   def _set_authenticating_session(self, is_authenticating_session, *args, **kwargs):
     if not is_authenticating_session:
+      self._get_assumed_role_credentials(unset= True)
       self.session_expired(refresh= True)
       
     self._is_authenticating_session = is_authenticating_session
@@ -322,7 +328,7 @@ class cloud_client_aws_client_base(base):
     self._org_client = self.get_boto_client(
       client= 'organizations', 
       account=self.get_organization_account(),
-      role = None, 
+      role = None,
       region = None
     )
     return self._get_organization_client()
@@ -413,7 +419,7 @@ class cloud_client_aws_client_base(base):
 
     credentials = botocore_credentials.RefreshableCredentials.create_from_metadata(
       metadata=self._convert_assume_role_credentials_boto_session(self.assume_role(account=account, role=role)),
-      refresh_using=lambda: self._convert_assume_role_credentials_boto_session(self.assume_role(account=account, role=role, force_refresh= True)),
+      refresh_using=lambda: self._convert_assume_role_credentials_boto_session(self.assume_role(account=account, role=role, refresh= True)),
       method="sts-assume-role",
     )
 

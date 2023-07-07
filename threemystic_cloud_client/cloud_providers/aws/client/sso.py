@@ -232,29 +232,33 @@ class cloud_client_aws_client_sso(base):
       profile_name = self.get_profile()['profile_data']['sso_profile_name']
     )
   
-  def _assume_role(self, account = None, region = None, role = None, force_refresh= False, *args, **kwargs):
+  def _assume_role(self, account = None, region = None, role = None, refresh= False, *args, **kwargs):
         
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= role):
       role = self.get_default_rolename()
     
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= region):
-        region = self.get_default_region()
+      region = self.get_default_region()
 
     if account is None or (self.get_common().helper_type().general().is_type(obj= account, type_check= str) and self.get_common().helper_type().string().is_null_or_whitespace(string_value= account)):
-        account = self.get_default_account()
-    
-    if not force_refresh and self._get_assumed_role_credentials().get(self._get_assumed_role_credentials_key(account= account, role= role)) is not None:
-        experation = self._get_assumed_role_credentials()[self._get_assumed_role_credentials_key(account= account, role= role)]["Credentials"]["Expiration"]
-        if self.get_common().helper_type().general().is_type(obj= experation, type_check= str):
-            experation = self.get_common().helper_type().datetime().parse_iso(iso_datetime_str=experation)
+      account = self.get_default_account()
 
-            if not self.get_common().helper_type().datetime().is_token_expired_now(compare_datetime= experation):
-                return self._get_assumed_role_credentials()[self._get_assumed_role_credentials_key(account= account, role= role)]["Credentials"]
+    if not refresh and self._get_assumed_role_credentials().get(self._get_assumed_role_credentials_key(account= account, role= role)) is not None:
+      experation = self._get_assumed_role_credentials()[self._get_assumed_role_credentials_key(account= account, role= role)]["Credentials"]["Expiration"]
+      if self.get_common().helper_type().general().is_type(obj= experation, type_check= str):
+        experation = self.get_common().helper_type().datetime().parse_iso(iso_datetime_str=experation)
+
+        if not self.get_common().helper_type().datetime().is_token_expired_now(compare_datetime= experation):
+          return self._get_assumed_role_credentials()[self._get_assumed_role_credentials_key(account= account, role= role)]["Credentials"]
     
     self._get_assumed_role_credentials()[self._get_assumed_role_credentials_key(account= account, role= role)] = self.__get_sso_boto_session().client('sso').get_role_credentials(
       roleName=role,
       accountId=self.get_account_id(account= account),
       accessToken=self._get_session_accesstoken()
+    )
+
+    return self._assume_role(
+      account = account, region = region, role = role, *args, **kwargs
     )
                 
   
