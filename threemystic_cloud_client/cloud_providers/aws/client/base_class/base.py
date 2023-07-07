@@ -69,7 +69,7 @@ class cloud_client_aws_client_base(base):
     return f'{self.get_account_id(account= account)}_{role}'
 
   def _get_assumed_role_credentials(self, *args, **kwargs):
-    if(not hasattr(self, "_assumed_role_credentials")):
+    if(hasattr(self, "_assumed_role_credentials")):
       return self._assumed_role_credentials
     
     self._assumed_role_credentials = {}
@@ -266,7 +266,7 @@ class cloud_client_aws_client_base(base):
   def assume_role(self, *args, **kwargs):
     self.ensure_session()
     if kwargs.get("account") is not None and self.get_common().helper_type().general().is_type(obj= kwargs["account"], type_check= str):
-      kwargs["account"] = self.make_account(Id= kwargs["account"])      
+      kwargs["account"] = self.make_account(Id= kwargs["account"])     
 
     return self._assume_role(**kwargs)
   

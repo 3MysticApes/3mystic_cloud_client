@@ -25,6 +25,12 @@ class cloud_client_aws(base):
     
     next_step.step()
 
+  def action_token(self, *args, **kwargs):     
+    from threemystic_cloud_client.cloud_providers.aws.action_token.step_1 import cloud_client_aws_token_step_1 as step
+    next_step = step(common= self.get_common(), logger= self.get_logger())
+    
+    next_step.step()
+
 
   
     

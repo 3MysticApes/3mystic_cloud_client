@@ -48,11 +48,11 @@ class cloud_client(base):
       return
 
     if provider == "azure":
-      self.__set_provider_azure(provider= provider)
+      self.__set_provider_azure(provider= provider, *args, **kwargs)
       return
     
     if provider == "aws":
-      self.__set_provider_aws(provider= provider)
+      self.__set_provider_aws(provider= provider, *args, **kwargs)
       return  
        
     raise self.get_common().exception().exception(

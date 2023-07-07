@@ -15,7 +15,7 @@ class cloud_client_azure_token_step_1(base):
     token_parser_args = {   }
     self._arg_parser = process_options.get_parser(
       parser_init_kwargs = {
-        "prog": "3mystic_cloud_client -p azure --token",
+        "prog": "3mystic_cloud_client --token -p azure",
         "formatter_class": argparse.RawDescriptionHelpFormatter,
         "description": textwrap.dedent('''\
         Requires additional settings.
