@@ -75,6 +75,7 @@ class cloud_client_aws_client_sso(base):
     
     sso_token_file = self.get_aws_user_path().joinpath('sso', 'cache', cache_key)
     
+    print(f"Token file Path {sso_token_file}")
     self._aws_config_profile_credentials = {}
     if not self.get_common().helper_path().is_file(sso_token_file):
       raise self.get_common().exception().exception(
@@ -87,7 +88,8 @@ class cloud_client_aws_client_sso(base):
     
     with sso_token_file.open(mode="r") as sso_cache:
       self._aws_config_profile_credentials = self.get_common().helper_json().loads(data= sso_cache.read())
-
+    
+    print(f'Raw Experation: {self._aws_config_profile_credentials.get("expiresAt")}')
     return self._get_sso_profile_credentials()
   
   def __internal_load_base_configs_ssoprofile(self, *args, **kwargs):
@@ -106,15 +108,18 @@ class cloud_client_aws_client_sso(base):
   
   def _get_session_expires(self, refresh = False, *args, **kwargs):
     if(hasattr(self, "_aws_config_profile_credentials_expires") and (not refresh)):
+      print(f"Exists - Session Expires: {self._aws_config_profile_credentials_expires}")
       return self._aws_config_profile_credentials_expires
 
     if(self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._get_sso_profile_credentials(refresh= refresh).get("expiresAt")) ):
+      print(f"Doesn't Exists - Session Expires: Now")
       return (self.get_common().helper_type().datetime().get() - self.get_common().helper_type().datetime().time_delta(seconds= 300))
     
     self._aws_config_profile_credentials_expires = (self.get_common().helper_type().datetime().convert_utc(
       dt= self.get_common().helper_type().datetime().parse_iso(iso_datetime_str= self._get_sso_profile_credentials().get("expiresAt")))
       - self.get_common().helper_type().datetime().time_delta(seconds= 300)
     )
+    print(f"Loads - Session Expires: {self._aws_config_profile_credentials_expires}")
 
     return self._get_session_expires()
     
