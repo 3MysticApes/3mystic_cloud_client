@@ -3,7 +3,7 @@ from threemystic_cloud_client.cli.actions.base_class.base import cloud_client_ac
 
 class cloud_client_test(base):
   def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
+    super().__init__(action= "--test,-t", *args, **kwargs)
 
 
   def _process_provider_aws(self, *args, **kwargs):

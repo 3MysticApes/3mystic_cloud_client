@@ -23,7 +23,7 @@ class cloud_client_action_base():
                 "validation": f"Valid Provider Options: {self._cloud_client.get_supported_providers()}",
               },
               "conversion": lambda item: self._cloud_client.get_common().helper_type().string().trim(string_value= self._cloud_client.get_common().helper_type().string().set_case(string_value= item, case= "lower")) if item is not None else None,
-              "desc": f"Which provider should we configure\nvalid options are {self._cloud_client.get_supported_providers()}",
+              "desc": f"Which provider?\nTo not see this prompt please use the --provider/-p flag.\nvalid options are {self._cloud_client.get_supported_providers()}",
               "default": None,
               "handler": generate_data_handlers.get_handler(handler= "base"),
               "optional": True
