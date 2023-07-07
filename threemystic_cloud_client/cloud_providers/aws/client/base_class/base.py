@@ -351,7 +351,7 @@ class cloud_client_aws_client_base(base):
     config.region_name = region
     return config
 
-  def get_boto_client(self, client, account=None, role = None, region = None, *argv, **kwargs):    
+  def get_boto_client(self, client, account=None, role = None, region = None, *argv, **kwargs):
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= region):
       region = self.get_default_region()
     
@@ -379,16 +379,27 @@ class cloud_client_aws_client_base(base):
     self._get_created_boto_clients()[cache_key] = session.client(client, config= self.get_boto_config(region= region, *argv, **kwargs))
     return self._get_created_boto_clients()[cache_key]
 
-  def _convert_assume_role_credentials_boto_session(self, credentials):
-    experation = credentials["expiration"]
-    if self.get_common().helper_type().general().is_type(obj= experation, type_check= str):
-      experation = self.get_common().helper_type().datetime().parse_iso(iso_datetime_str=experation)
+  def _auto_parse_aws_expiration(self, expiration, *argv, **kwargs):
+    if self.get_common().helper_type().general().is_type(obj= expiration, type_check= int):
+      return self.get_common().helper_type().datetime().get_from_timestamp(time_delta=expiration)
     
+    if self.get_common().helper_type().general().is_type(obj= expiration, type_check= str):
+      return self.get_common().helper_type().datetime().parse_iso(iso_datetime_str=expiration)
+    
+        
+  def _convert_assume_role_credentials_boto_session(self, credentials):
+    expiration = self._auto_parse_aws_expiration(
+      expiration= credentials["expiration"]
+    )
+    
+
     return {
         "access_key": credentials["accessKeyId"],
         "secret_key": credentials["secretAccessKey"],
         "token": credentials["sessionToken"],
-        "expiry_time": f"{experation}+00:00" 
+        "expiry_time": self.get_common().helper_type().datetime().get_iso_datetime(
+          dt= expiration
+        )
       }
 
 
