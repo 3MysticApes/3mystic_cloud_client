@@ -274,7 +274,7 @@ class cloud_client_aws_client_base(base):
     return self._session_expired(refresh= refresh, *args, **kwargs)
   
   def ensure_session(self, count = 0, *args, **kwargs):
-    if(not self.session_expired(refresh = False if count == 0 else True)):
+    if(not self.session_expired()):
       return
     
     if count > 5:
@@ -309,6 +309,9 @@ class cloud_client_aws_client_base(base):
     return False
   
   def _set_authenticating_session(self, is_authenticating_session, *args, **kwargs):
+    if not is_authenticating_session:
+      self.session_expired(refresh= True)
+      
     self._is_authenticating_session = is_authenticating_session
     return self.is_authenticating_session()
 

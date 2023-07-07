@@ -70,20 +70,20 @@ class cloud_client_aws_client_sso(base):
     if(hasattr(self, "_aws_config_profile_credentials") and (not refresh)):
       return self._aws_config_profile_credentials
     
-    cache_key = f'{self.get_common().encryption().hash(hash_method="sha1").generate_hash(data= self._get_aws_sso_config_profile(refresh= refresh)["sso_start_url"])}.json'    
+    cache_key = f'{self.get_common().encryption().hash(hash_method="sha1").generate_hash(data= self._get_aws_sso_config_profile(refresh= refresh)["sso_start_url"])}.json' 
     
-    ssoTokenFile = self.get_aws_user_path().joinpath('sso', 'cache', cache_key)
+    sso_token_file = self.get_aws_user_path().joinpath('sso', 'cache', cache_key)
     
-    if not self.get_common().helper_path().is_file(ssoTokenFile):
+    if not self.get_common().helper_path().is_file(sso_token_file):
       raise self.get_common().exception().exception(
         exception_type = "generic"
       ).type_error(
         logger = self.get_common().get_logger(),
         name = f"NOT FOUND",
-        message = f"Token File not found or not valid file: {ssoTokenFile}"
+        message = f"Token File not found or not valid file: {sso_token_file}"
       )
       
-    with ssoTokenFile.open(mode="r") as sso_cache:
+    with sso_token_file.open(mode="r") as sso_cache:
       self._aws_config_profile_credentials = self.get_common().helper_json().loads(data= sso_cache.read())
 
   def __internal_load_base_configs_ssoprofile(self, *args, **kwargs):
@@ -97,26 +97,23 @@ class cloud_client_aws_client_sso(base):
       if(not self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._aws_config_profile_credentials_accesstoken) ):
         return self._aws_config_profile_credentials_accesstoken
     
-    self._aws_config_profile_credentials_accesstoken = self._get_sso_profile_credentials()["accessToken"]
-    return self._get_session_accesstoken()
+    self._aws_config_profile_credentials_accesstoken = self._get_sso_profile_credentials().get("accessToken")
+    return self._get_session_accesstoken(refresh= refresh)
   
   def _get_session_expires(self, refresh = False, *args, **kwargs):
     if(hasattr(self, "_aws_config_profile_credentials_expires") and (not refresh)):
       return self._aws_config_profile_credentials_expires
 
-    if(self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._get_sso_profile_credentials()['expiresAt']) ):
+    if(self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._get_sso_profile_credentials(refresh= refresh).get("expiresAt")) ):
       return (self.get_common().helper_type().datetime().get() - self.get_common().helper_type().datetime().time_delta(totalSecondAddTime= 300))
     
     self._aws_config_profile_credentials_expires = self.get_common().helper_type().datetime().convert_utc(
-      dt= (self.get_common().helper_type().datetime().parse_iso(iso_datetime_str= self._get_sso_profile_credentials()['expiresAt']
+      dt= (self.get_common().helper_type().datetime().parse_iso(iso_datetime_str= self._get_sso_profile_credentials().get("expiresAt")
       - self.get_common().helper_type().datetime().time_delta(totalSecondAddTime= 300)))
     )
     return self._get_session_expires()
     
   def _session_expired(self, refresh = False, *args, **kwargs):
-
-    if(self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._get_sso_profile_credentials(refresh= refresh)['expiresAt']) ):
-      return True
 
     return self.get_common().helper_type().datetime().is_token_expired_now(compare_datetime= self._get_session_expires(refresh= refresh))
     
