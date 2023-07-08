@@ -168,7 +168,7 @@ class cloud_client_provider_azure_base(base):
       )
     )
   
-  def serialize_azresource(self, resource, *args, **kwargs):
+  def serialize_resource(self, resource, *args, **kwargs):
     if resource is None:
       return None
     
@@ -177,7 +177,7 @@ class cloud_client_provider_azure_base(base):
 
     return resource.serialize(keep_readonly= True)
     
-  def deserialize_azresource(self, resource, aztype):
+  def deserialize_resource(self, resource, aztype):
     if resource is None:
       return None
 
@@ -253,14 +253,25 @@ class cloud_client_provider_azure_base(base):
     )
     return resource_id_split[resource_id_split.index("resourcegroups") + 1]
   
-  def get_azresource_location(self, resource, *args, **kwargs):
+  def get_resource_name(self, resource, *args, **kwargs):
     if resource is None:
       return None
 
     if not self.get_common().helper_type().general().is_type(obj= resource, type_check= str):
       if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
-          return self.get_azresource_location(resource= resource.get("extra_region") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=resource.get("extra_region")) else resource.get("location"))
-      return self.get_azresource_location(resource= getattr(resource, "location"))
+          return self.get_resource_name(resource= resource.get("extra_name") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=resource.get("extra_name")) else resource.get("name"))
+      return self.get_resource_name(resource= getattr(resource, "name"))
+
+    return resource
+  
+  def get_resource_location(self, resource, *args, **kwargs):
+    if resource is None:
+      return None
+
+    if not self.get_common().helper_type().general().is_type(obj= resource, type_check= str):
+      if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+          return self.get_resource_location(resource= resource.get("extra_region") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=resource.get("extra_region")) else resource.get("location"))
+      return self.get_resource_location(resource= getattr(resource, "location"))
 
     return resource
   
