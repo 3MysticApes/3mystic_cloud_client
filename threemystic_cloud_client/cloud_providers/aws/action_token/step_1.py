@@ -40,9 +40,7 @@ class cloud_client_aws_token_step_1(base):
             "dest": "token_account",
             "help": "The AWS Account ID to generate access token information for",
             "action": 'store'
-          }
-        },
-        {
+          },
           "--profile": {
             "default": None, 
             "type": str,
@@ -50,7 +48,7 @@ class cloud_client_aws_token_step_1(base):
             "help": "The 3Mystic AWS Profile to use. If not provided the default will be used",
             "action": 'store'
           }
-        }
+        },
       ])
     )
 
