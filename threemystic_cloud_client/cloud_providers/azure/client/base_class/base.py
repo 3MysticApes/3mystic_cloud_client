@@ -328,3 +328,34 @@ class cloud_client_azure_client_base(base):
       "result": self.get_common().helper_json().loads(data= stdout_buffer.getvalue()) if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= stdout_buffer.getvalue()) else None,
       "error": error_message
     }
+  
+  def get_resource_tags_as_dictionary(self, resource, *args, **kwargs):
+    if resource is None:
+      return None
+
+    tags = None
+    if not self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+      if hasattr(resource, "tags"):
+        tags = resource.tags
+    elif self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+      tags = resource.get("tags")
+
+    if tags is None:
+      tags = {}
+      print(resource)
+      
+    if "name" not in tags:
+      name_options = ["display_name", "displayname", "name"]
+
+      if not self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+        for att in dir(resource):
+          if self.get_common().helper_type().string().set_case(string_value= att, case= "lower") in name_options:
+            tags["name"] = getattr(resource, att).strip()
+            return tags
+
+      for att in resource.keys():
+        if self.get_common().helper_type().string().set_case(string_value= att, case= "lower") in name_options:
+          tags["name"] = resource.get(att).strip()
+          return tags
+    return tags
+  
