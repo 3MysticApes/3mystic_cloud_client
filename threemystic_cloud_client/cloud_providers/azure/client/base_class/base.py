@@ -342,7 +342,6 @@ class cloud_client_azure_client_base(base):
 
     if tags is None:
       tags = {}
-      print(resource)
       
     if "name" not in tags:
       name_options = ["display_name", "displayname", "name"]
