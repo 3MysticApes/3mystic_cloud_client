@@ -445,19 +445,15 @@ class cloud_client_aws_client_base(base):
   def _get_accounts(self, refresh = False, include_suspended = False):
     
     if hasattr(self, "_account_list") and not refresh:
+      print("self has account_list")
       return_list = "active" if not include_suspended else "all"
+      print(f"return_list: {return_list}")
       if self._account_list is not None and len(self._account_list) > 0:
+        print(f"account_list is not empty")
+        print(f"return_list in accounts {return_list in self._account_list}")
         if return_list in self._account_list:
           return self._account_list[return_list]
     
-    if not self.ensure_session():
-      raise self.get_common().exception().exception(
-          exception_type = "generic"
-        ).type_error(
-          logger = self.get_common().get_logger(),
-          name = "SessionInvalid",
-          message = f"get_accounts: could not get accounts because session is not valid"
-        )
     
     self._account_list = {
       "all": self.general_boto_call_array(
@@ -469,7 +465,8 @@ class cloud_client_aws_client_base(base):
     }
     
     self._account_list["acive"] = [ acct for acct in self._account_list["all"] if self.get_common().helper_type().string().set_case(string_value= acct["Status"], case= "lower") != "suspended" ]
-    
+    print(self._account_list)
+
     return self._get_accounts(refresh= False, include_suspended= include_suspended) 
 
   def get_accountids_by_ou(self, org_ou, exclude_ous = None, **kwargs):
@@ -501,7 +498,9 @@ class cloud_client_aws_client_base(base):
     return list(dict.fromkeys(account_list))
   
   def get_accounts(self, account = None, refresh = False, include_suspended = False):    
+    print(f"get_all_accounts - {refresh} - {include_suspended}")
     all_accounts = self._get_accounts(refresh=refresh, include_suspended=include_suspended)
+    print(f'all_accounts: {all_accounts}')
     if account is None:
       return all_accounts
     
