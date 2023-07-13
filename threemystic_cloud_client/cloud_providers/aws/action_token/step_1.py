@@ -64,7 +64,7 @@ class cloud_client_aws_token_step_1(base):
     if not super().step( *args, **kwargs):
       return
     
-    if (self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._processed_arg_info.get("client_help"))):
+    if (self.get_common().helper_type().bool().is_true(check_value= self._processed_arg_info.get("client_help"))):
       self._arg_parser.print_help()
       return
     
