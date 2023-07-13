@@ -14,19 +14,19 @@ class cloud_client_azure(base):
       return
     
     from threemystic_cloud_client.cloud_providers.azure.action_test.step_1 import cloud_client_azure_test_step_1 as test
-    next_step = test(common= self.get_common(), logger= self.get_logger(), *args, **kwargs)
+    next_step = test(common= self.get_common(), logger= self.get_common().get_logger(), *args, **kwargs)
     
     next_step.step()
   
   def action_config(self, *args, **kwargs):     
     from threemystic_cloud_client.cloud_providers.azure.config.step_1 import cloud_client_azure_config_step_1 as step
-    next_step = step(common= self.get_common(), logger= self.get_logger())
+    next_step = step(common= self.get_common(), logger= self.get_common().get_logger())
     
     next_step.step()
   
   def action_token(self, *args, **kwargs):     
     from threemystic_cloud_client.cloud_providers.azure.action_token.step_1 import cloud_client_azure_token_step_1 as step
-    next_step = step(common= self.get_common(), logger= self.get_logger())
+    next_step = step(common= self.get_common(), logger= self.get_common().get_logger())
     
     next_step.step()
 

@@ -47,6 +47,13 @@ class cloud_client_aws_token_step_1(base):
             "dest": "token_profile",
             "help": "The 3Mystic AWS Profile to use. If not provided the default will be used",
             "action": 'store'
+          },
+          "--format": {
+            "default": "cli", 
+            "type": str,
+            "dest": "token_format",
+            "help": "The format the token will be returned in the options are export, cli, raw. The default is cli",
+            "action": 'store'
           }
         },
       ])
@@ -73,12 +80,37 @@ class cloud_client_aws_token_step_1(base):
       return
 
     from threemystic_cloud_client.cloud_client import cloud_client
-    aws_client = cloud_client(logger= self.get_logger(), common=self.get_common()).client(
+    aws_client = cloud_client(logger= self.get_common().get_logger(), common=self.get_common()).client(
       provider= "aws",
       profile_name= self._processed_arg_info.get("token_profile")
     )
 
-    print(aws_client.assume_role(account= self._processed_arg_info.get("token_account")))
+    token_format = self.get_common().helper_type().string().set_case(string_value= self._processed_arg_info.get("token_format"), case= "lower")
+    if self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._processed_arg_info.get("token_format")):
+      token_format = "cli"
+    
+    if token_format == "raw":
+      print(
+        self.get_common().helper_json().dumps(data= aws_client.assume_role(account= self._processed_arg_info.get("token_account")))
+      )
+      return
+    
+    if token_format == "export":
+      print(
+        aws_client.convert_assume_role_credentials_export(credentials= aws_client.assume_role(account= self._processed_arg_info.get("token_account")))
+      )
+      return
+    
+    if aws_client.session_expired():
+      raise self.get_common().exception().exception(exception_type= "generic").exception(
+        message= f"You must authenticate with the provider first. To test the connection you can run\n3mystic_cloud_client -p aws -t --profile {aws_client.get_profile().get('profile_name')}"
+      )
+      return 1
+    
+    print(
+      self.get_common().helper_json().dumps(data= aws_client.convert_assume_role_credentials_cli(credentials= aws_client.assume_role(account= self._processed_arg_info.get("token_account"))))
+    )
+    return
     
     
   

@@ -12,7 +12,7 @@ class cloud_client_azure_test_step_1(base):
       return
     
     from threemystic_cloud_client.cloud_client import cloud_client
-    azure_client = cloud_client(logger= self.get_logger(), common=self.get_common()).client(
+    azure_client = cloud_client(logger= self.get_common().get_logger(), common=self.get_common()).client(
       provider= "azure"
     )
     

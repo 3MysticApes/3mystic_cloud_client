@@ -49,6 +49,13 @@ class cloud_client_cli(base_process_options):
             "help": "Action: This is so that you can generate the required token.",
             "action": 'store_const'
         },
+        "--generate,-g": {
+            "default": None, 
+            "const": "generate",
+            "dest": "client_action",
+            "help": "Action: For providers like aws it is easier to have a profile when interacting with the accounts. This will help generate the various profiles.",
+            "action": 'store_const'
+        },
         "--provider,-p": {
             "default": None, 
             "type": str,
@@ -95,6 +102,11 @@ class cloud_client_cli(base_process_options):
 
     if force_action == "token":
       from threemystic_cloud_client.cli.actions.action_token import cloud_client_token as user_action
+      user_action(cloud_client= self._cloud_client).main(provider= self.__get_client_provider())
+      return
+
+    if force_action == "generate":
+      from threemystic_cloud_client.cli.actions.action_generate import cloud_client_generate as user_action
       user_action(cloud_client= self._cloud_client).main(provider= self.__get_client_provider())
       return
 

@@ -198,6 +198,9 @@ class cloud_client_provider_base(base):
   def action_token(self, *args, **kwargs):
     print("Provider token config not configured")
 
+  def action_generate(self, *args, **kwargs):     
+    print("Provider generate config not configured/not needed")
+
     
 
   

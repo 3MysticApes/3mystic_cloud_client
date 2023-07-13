@@ -388,21 +388,46 @@ class cloud_client_aws_client_base(base):
     if self.get_common().helper_type().general().is_type(obj= expiration, type_check= str):
       return self.get_common().helper_type().datetime().parse_iso(iso_datetime_str=expiration)
     
+
+  def convert_assume_role_credentials_export(self, credentials):
+    
+    outputData = f"\nexport AWS_ACCESS_KEY_ID=\"{credentials['AccessKeyId']}\"\n"
+    outputData += f"export AWS_SECRET_ACCESS_KEY=\"{credentials['SecretAccessKey']}\"\n"
+    outputData += f"export AWS_SESSION_TOKEN=\"{credentials['SessionToken']}\"\n"
+    outputData += f"export AWS_DEFAULT_REGION=\"{self.get_default_region()}\"\n"
+
+    return outputData
+  
+  def convert_assume_role_credentials_cli(self, credentials):
+    # https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sourcing-external.html
+    expiration = self._auto_parse_aws_expiration(
+      expiration= credentials["expiration"]
+    )
+
+    return {
+      "Version": 1,
+      "AccessKeyId": credentials["accessKeyId"],
+      "SecretAccessKey": credentials["secretAccessKey"],
+      "SessionToken": credentials["sessionToken"],
+      "Expiration": self.get_common().helper_type().datetime().get_iso_datetime(
+        dt= expiration
+      )
+    }
         
-  def _convert_assume_role_credentials_boto_session(self, credentials):
+  def convert_assume_role_credentials_boto_session(self, credentials):
     expiration = self._auto_parse_aws_expiration(
       expiration= credentials["expiration"]
     )
     
 
     return {
-        "access_key": credentials["accessKeyId"],
-        "secret_key": credentials["secretAccessKey"],
-        "token": credentials["sessionToken"],
-        "expiry_time": self.get_common().helper_type().datetime().get_iso_datetime(
-          dt= expiration
-        )
-      }
+      "access_key": credentials["accessKeyId"],
+      "secret_key": credentials["secretAccessKey"],
+      "token": credentials["sessionToken"],
+      "expiry_time": self.get_common().helper_type().datetime().get_iso_datetime(
+        dt= expiration
+      )
+    }
 
 
   def __get_boto_session(self, role = None, region = None, profile = None, **kwargs):
@@ -431,8 +456,8 @@ class cloud_client_aws_client_base(base):
     )     
 
     credentials = botocore_credentials.RefreshableCredentials.create_from_metadata(
-      metadata=self._convert_assume_role_credentials_boto_session(self.assume_role(account=account, role=role)),
-      refresh_using=lambda: self._convert_assume_role_credentials_boto_session(self.assume_role(account=account, role=role, refresh= True)),
+      metadata=self.convert_assume_role_credentials_boto_session(self.assume_role(account=account, role=role)),
+      refresh_using=lambda: self.convert_assume_role_credentials_boto_session(self.assume_role(account=account, role=role, refresh= True)),
       method="sts-assume-role",
     )
 

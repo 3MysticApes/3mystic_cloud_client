@@ -25,7 +25,7 @@ class cloud_client_provider_aws_base(base):
       return account["Name"].strip()
     
     if account.get("accountName"):
-      self.get_logger().warning("accountName will be depreciated use Name")
+      self.get_common().get_logger().warning("accountName will be depreciated use Name")
       return account["accountName"].strip()
     
     raise self.get_common().exception().exception(
@@ -40,14 +40,14 @@ class cloud_client_provider_aws_base(base):
     if account is None:
       return None
     if self.get_common().helper_type().general().is_type(obj= account, type_check= str):
-      return self.get_common().helper_type().string().set_case(string_value= account, case= "lower").strip()
+      return self.get_common().helper_type().string().trim(string_value=self.get_common().helper_type().string().set_case(string_value= account, case= "lower"))
     
     if account.get("Id"):
-      return self.get_common().helper_type().string().set_case(string_value= account["Id"], case= "lower").strip()
+      return self.get_common().helper_type().string().trim(string_value=self.get_common().helper_type().string().set_case(string_value= account["Id"], case= "lower"))
 
     if account.get("accountId"):
-      self.get_logger().warning("accountId will be depreciated use Id")
-      return self.get_common().helper_type().string().set_case(string_value= account["accountId"], case= "lower").strip()
+      self.get_common().get_logger().warning("accountId will be depreciated use Id")
+      return self.get_common().helper_type().string().trim(string_value=self.get_common().helper_type().string().set_case(string_value= account["accountId"], case= "lower"))
     
     raise self.get_common().exception().exception(
       exception_type = "generic"
@@ -60,20 +60,20 @@ class cloud_client_provider_aws_base(base):
   def make_account(self, **kwargs):    
     account = {}
     if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= kwargs.get("accountId")):
-      self.get_logger().warning("accountId will be depreciated use Id")
-      account["accountId"] = self.get_common().helper_type().string().set_case(string_value= kwargs.get("accountId"), case= "lower").strip()
-      account["Id"] = self.get_common().helper_type().string().set_case(string_value= kwargs.get("accountId"), case= "lower").strip()
+      self.get_common().get_logger().warning("accountId will be depreciated use Id")
+      account["accountId"] = self.get_common().helper_type().string().trim(string_value=self.get_common().helper_type().string().set_case(string_value= kwargs.get("accountId"), case= "lower"))
+      account["Id"] = self.get_common().helper_type().string().trim(string_value=self.get_common().helper_type().string().set_case(string_value= kwargs.get("accountId"), case= "lower"))
 
     if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= kwargs.get("Id")):
-      account["Id"] = self.get_common().helper_type().string().set_case(string_value= kwargs.get("Id"), case= "lower").strip()
+      account["Id"] = self.get_common().helper_type().string().trim(string_value=self.get_common().helper_type().string().set_case(string_value= kwargs.get("Id"), case= "lower"))
 
     if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= kwargs.get("accountName")):
-      self.get_logger().warning("accountName will be depreciated use Name")
-      account["accountName"] = kwargs.get("accountName").strip()
-      account["Name"] = kwargs.get("accountName").strip()
+      self.get_common().get_logger().warning("accountName will be depreciated use Name")
+      account["accountName"] = self.get_common().helper_type().string().trim(string_value=kwargs.get("accountName"))
+      account["Name"] = self.get_common().helper_type().string().trim(string_value=kwargs.get("accountName"))
 
     if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= kwargs.get("Name")):
-      account["Name"] = kwargs.get("Name").strip()
+      account["Name"] = self.get_common().helper_type().string().trim(string_value=kwargs.get("Name"))
     
     return account
   

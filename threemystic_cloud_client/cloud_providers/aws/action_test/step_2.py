@@ -12,7 +12,7 @@ class cloud_client_aws_test_step_2(base):
       return
     
     from threemystic_cloud_client.cloud_client import cloud_client
-    aws_client = cloud_client(logger= self.get_logger(), common=self.get_common()).client(
+    aws_client = cloud_client(logger= self.get_common().get_logger(), common=self.get_common()).client(
       provider= "aws",
       profile_name= profile_name
     )
