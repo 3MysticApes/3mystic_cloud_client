@@ -447,7 +447,8 @@ class cloud_client_aws_client_base(base):
     if hasattr(self, "_account_list") and not refresh:
       return_list = "active" if not include_suspended else "all"
       if self._account_list is not None and len(self._account_list) > 0:
-        return self._account_list[return_list]
+        if return_list in self._account_list:
+          return self._account_list[return_list]
     
     if not self.ensure_session():
       raise self.get_common().exception().exception(
@@ -467,7 +468,7 @@ class cloud_client_aws_client_base(base):
       )
     }
     
-    self._account_list["acive"] = [ acct for acct in self._account_list if self.get_common().helper_type().string().set_case(string_value= acct["Status"], case= "lower") != "suspended" ]
+    self._account_list["acive"] = [ acct for acct in self._account_list["all"] if self.get_common().helper_type().string().set_case(string_value= acct["Status"], case= "lower") != "suspended" ]
     
     return self._get_accounts(refresh= refresh, include_suspended= include_suspended) 
 
