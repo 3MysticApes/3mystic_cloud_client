@@ -470,7 +470,7 @@ class cloud_client_aws_client_base(base):
     
     self._account_list["acive"] = [ acct for acct in self._account_list["all"] if self.get_common().helper_type().string().set_case(string_value= acct["Status"], case= "lower") != "suspended" ]
     
-    return self._get_accounts(refresh= refresh, include_suspended= include_suspended) 
+    return self._get_accounts(refresh= False, include_suspended= include_suspended) 
 
   def get_accountids_by_ou(self, org_ou, exclude_ous = None, **kwargs):
     if org_ou is None:
