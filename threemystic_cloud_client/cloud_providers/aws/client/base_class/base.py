@@ -306,6 +306,8 @@ class cloud_client_aws_client_base(base):
       self.authenticate_session()
     finally:
       self._set_authenticating_session(is_authenticating_session= False)
+    
+    return self.ensure_session()
   
   def is_authenticating_session(self, *args, **kwargs):
     if(hasattr(self, "_is_authenticating_session")):
@@ -409,7 +411,7 @@ class cloud_client_aws_client_base(base):
 
     return botocore_session.get_session()
 
-  def get_boto_session(self, account=None, role = None, region = None, profile = None):
+  def get_boto_session(self, account=None, role = None, region = None, profile = None, *args, **kwargs):
     
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= role):
       role = self.get_default_rolename()
@@ -438,7 +440,7 @@ class cloud_client_aws_client_base(base):
     session.set_config_variable("region", region)
       
     self._get_created_boto_sessions()[cache_key] = boto_session(botocore_session= session)
-    return self._get_created_boto_sessions[cache_key]
+    return self.get_boto_session(account=account, role = role, region = region, profile = profile, *args, **kwargs)
   
   def _get_accounts(self, refresh = False, include_suspended = False):
     
