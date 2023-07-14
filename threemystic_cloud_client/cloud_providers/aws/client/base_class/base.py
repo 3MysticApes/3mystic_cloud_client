@@ -19,6 +19,17 @@ class cloud_client_aws_client_base(base):
   def _session_expired(self, refresh = False, *args, **kwargs):
     pass
   
+  @property
+  def default_region_resources(self):
+    if hasattr(self, "_default_region_resources"):
+      return self._default_region_resources
+    
+    return ["us-east-1"]
+  
+  @default_region_resources.setter
+  def _set_default_region_resources(self, value):
+    self._default_region_resources = value
+
   def get_resource_general_arn(cls, resource_type = None, resource_type_sub = None, account_id = None, region = None, id = None, data_item = None, **kwargs ):
     if data_item is not None:
       lower_keys = [key.lower() for key in data_item.keys()]
@@ -475,6 +486,93 @@ class cloud_client_aws_client_base(base):
       
     self._get_created_boto_sessions()[cache_key] = boto_session(botocore_session= session)
     return self.get_boto_session(account=account, role = role, region = region, profile = profile, *args, **kwargs)
+  
+  def _get_account_regions_costexplorer(self, account, services = None, *args, **kwargs ):
+    
+    ce_client = self.get_boto_client(
+      client= "ce",
+      account=account
+    )
+
+    filter = {}
+    granularity = "DAILY"
+    
+    utc_now = self.get_common().helper_type().datetime().get()
+    time_period = {
+      "Start":(self.get_common().helper_type().datetime().datetime_as_string(
+        dt= (utc_now + self.get_common().helper_type().datetime().time_delta(monts= -1, dt= utc_now)),
+        dt_format= "%Y-%m-%d"
+      )),
+      "End": (self.get_common().helper_type().datetime().datetime_as_string(
+        dt= utc_now,
+        dt_format= "%Y-%m-%d"
+      ))
+    }   
+    metrics = ["NET_UNBLENDED_COST"]
+    group_by= [{"Type":"DIMENSION", "Key":"REGION"}]
+
+    get_cost_usage_params = {
+      "Granularity":granularity,
+      "TimePeriod": time_period,
+      "Metrics": metrics,
+      "GroupBy": group_by
+    }
+
+    if not services is None:
+      filter["Dimensions"] = {
+        "Key": "SERVICE",
+        "Values": services,
+        "MatchOptions": ["EQUALS", "CASE_SENSITIVE"]
+      }
+      get_cost_usage_params["Filter"] = filter
+
+
+    try:
+      discovered_resultsbytime = self.general_boto_call_array(
+        boto_call = lambda item: ce_client.get_cost_and_usage(**item),
+        boto_params = get_cost_usage_params,
+        boto_nextkey = "NextToken",
+        boto_key="ResultsByTime"
+      )
+
+      regions = []
+
+      for itemTime in discovered_resultsbytime:
+        for itemGroup in itemTime["Groups"]:
+          for item in itemGroup["Keys"]:
+            if self.get_common().helper_type().string().set_case(string_value= item, case= "lower") == "noregion":
+              continue
+            if not item in regions:
+              regions.append(item)
+      return regions
+    except Exception as err:
+      self.get_common().get_logger().exception(msg=f"Could not pull regions dynamically: {err}", exc_info= err)
+      return self.default_region_resources
+    
+  def get_accounts_regions_costexplorer(self, accounts, services, role= None):     
+    if role is None:
+      role = self.get_default_rolename()
+    regions = { }
+    
+    for account in accounts:      
+      regions[self.get_account_id(account)] = self.get_account_regions_costexplorer(
+        account=account,
+        role=role,
+        services= services
+      )
+
+    return regions
+
+  def get_account_regions_costexplorer(self, account, role, services):     
+    # to get a list of all services for an account
+    # aws ce get-dimension-values --time-period "Start=2022-09-01,End=2022-09-11" --dimension SERVICE
+    regions = { }
+
+    return self._get_account_regions_costexplorer(
+      account= account, 
+      role= role,
+      services= services
+    )
   
   def _get_accounts(self, refresh = False, include_suspended = False):
     
