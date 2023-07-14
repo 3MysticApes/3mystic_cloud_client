@@ -18,7 +18,16 @@ class cloud_client_aws_client_base(base):
   @abstractmethod
   def _session_expired(self, refresh = False, *args, **kwargs):
     pass
+  
+  def get_resource_general_arn(cls, resource_type = None, resource_type_sub = None, account_id = None, region = None, id = None, data_item = None, **kwargs ):
+    if data_item is not None:
+      lower_keys = [key.lower() for key in data_item.keys()]
+      if "arn" in lower_keys:
+        arn_key = list(data_item.keys())[lower_keys.index("arn")]
+        return data_item[arn_key]
 
+    return f'arn:aws:{resource_type}:{region}:{account_id}:{resource_type_sub}/{id}'
+  
   def _get_boto_client_key(self, client, account = None, region = None, *args, **kwargs):
     
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= region):
