@@ -7,7 +7,7 @@ class cloud_client_aws_client_base(base):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-    self.__set_profile(*args, **kwargs)
+    self._set_profile(*args, **kwargs)
   
   @abstractmethod
   def _session_expired(self, refresh = False, *args, **kwargs):

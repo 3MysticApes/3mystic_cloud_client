@@ -167,7 +167,7 @@ class cloud_client_provider_aws_base(base):
     
   def get_profile(self, *args, **kwargs):
     if(not hasattr(self, "_profile")):
-      self.__set_profile()
+      self._set_profile()
     
     if(self._profile is None):
       raise self.get_common().exception().exception(
@@ -180,7 +180,7 @@ class cloud_client_provider_aws_base(base):
     
     return self._profile
   
-  def __set_profile(self, profile_data = None, *args, **kwargs):
+  def _set_profile(self, profile_data = None, *args, **kwargs):
     if profile_data is None:
       self._profile = self.get_default_profile()
       return

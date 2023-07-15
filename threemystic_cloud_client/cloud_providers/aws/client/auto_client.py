@@ -4,7 +4,7 @@ class cloud_client_aws_client_auto(base):
   def __init__(self, *args, **kwargs):
     super().__init__(logger_name= "cloud_client_aws_auto", *args, **kwargs)
 
-    self.__set_profile(*args, **kwargs)
+    self._set_profile(*args, **kwargs)
   
   def get_resource_group_from_resource(self, account, *args, **kwargs):
     pass
@@ -30,7 +30,7 @@ class cloud_client_aws_client_auto(base):
     
     return self._profile
   
-  def __set_profile(self, profile_name = None, *args, **kwargs):
+  def _set_profile(self, profile_name = None, *args, **kwargs):
     if not self.get_common().helper_type().string().is_null_or_whitespace(string_value= profile_name):
       profile_data = self.get_config_profile_name(profile_name= profile_name)
       if profile_data is None:
