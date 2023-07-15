@@ -2,6 +2,8 @@
 A tool to help uniform the connection to the cloud providers.
 Currently supports AWS/Azure
 
+This project is currently in beta, along with the other projects. Once the other projects come out of beta this one will as well. However, this is also, the most stable of the project. I am trying not to change things that would break from version to version. So if you would like to use something here, it should be relatively safe. I will try to call out breaking changes. The connection for both AWS and Azure does currently work. So if you have issues please create an issue.
+
 
 
 # Install
@@ -24,6 +26,10 @@ pip install https://github.com/3MysticApes/3mystic_cloud_client
 This project is packaged using Hatch. If you need to install Hatch please refer to their documentation
 https://hatch.pypa.io/latest/install/
 
+# Setup
+
+Once installed please run 
+3mystic_cloud_client -c
 
 # Usage
 
