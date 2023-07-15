@@ -28,7 +28,7 @@ https://hatch.pypa.io/latest/install/
 # Usage
 
 ## Base 3mystic_cloud_client
-usage: 3mystic_cloud_client [-v] [--help] [--version] [--config] [--test] [--token] [--generate]
+usage: 3mystic_cloud_client [--version] [--config] [--test] [--token] [--generate]
  [--provider {aws,azure}]
 
 One Action is required
@@ -45,7 +45,8 @@ options:</br>
 
 ## Base 3mystic_cloud_client - AWS Token
 
-usage: 3mystic_cloud_client --token -p aws [-v] [--help] [--account TOKEN_ACCOUNT] [--profile TOKEN_PROFILE] [--format TOKEN_FORMAT]
+
+usage: 3mystic_cloud_client --token -p aws [--account TOKEN_ACCOUNT] [--profile TOKEN_PROFILE] [--format {cli,raw,export}]
 
 Requires additional settings.</br>
   --account is required"</br>
@@ -56,6 +57,64 @@ options:</br>
   --account TOKEN_ACCOUNT - The AWS Account ID to generate access token information for</br>
   --profile TOKEN_PROFILE - The 3Mystic AWS Profile to use. If not provided the default will be used</br>
   --format TOKEN_FORMAT - The format the token will be returned in the options are export, cli, raw. The default is cli</br>
+
+This command generates a token in various formats. This can be used for aws cli profiles to auto generate credentials.
+
+## Base 3mystic_cloud_client - AWS Generate
+
+usage: 3mystic_cloud_client --generate -p aws 
+
+This will auto generate aws cli config profiles.
+
+## Base 3mystic_cloud_client - AWS Test
+
+usage: 3mystic_cloud_client --test -p aws 
+
+This will help test the config to make sure its communicating with the settings
+
+## Base 3mystic_cloud_client - AWS Config
+
+usage: 3mystic_cloud_client --config -p aws 
+
+This is used to setup the configuration for the provider
+
+## Base 3mystic_cloud_client - Azure Token
+
+
+usage: 3mystic_cloud_client --token -p azure [-v] [--resource TOKEN_RESOURCE] [--tenant TOKEN_TENANT]
+
+Requires additional settings.
+  --tenant is required
+  --resource is required
+
+  To learn more please see: https://learn.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest#az-account-get-access-token
+
+options:
+  -v, --verbose         Verbose output
+  --resource TOKEN_RESOURCE - Azure resource endpoints in AAD v1.0.
+  --tenant TOKEN_TENANT - Tenant ID for which the token is acquired.
+
+
+This command will generate tokens you can use for various things like ms-graph
+
+## Base 3mystic_cloud_client - Azure Generate
+
+usage: 3mystic_cloud_client --generate -p azure 
+
+This currently doesn't do anything, as its not needed in Azure with the current setup.
+
+## Base 3mystic_cloud_client - AWS Test
+
+usage: 3mystic_cloud_client --test -p azure 
+
+This will help test the config to make sure its communicating with the settings
+
+## Base 3mystic_cloud_client - AWS Config
+
+usage: 3mystic_cloud_client --config -p azure 
+
+This is used to setup the configuration for the provider
+
 
 # Contribute
 You need to install Hatch. Please see the previous Hatch section under install.

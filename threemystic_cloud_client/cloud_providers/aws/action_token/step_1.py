@@ -51,6 +51,7 @@ class cloud_client_aws_token_step_1(base):
           "--format": {
             "default": "cli", 
             "type": str,
+            "choices": ["cli", "raw", "export"],
             "dest": "token_format",
             "help": "The format the token will be returned in the options are export, cli, raw. The default is cli",
             "action": 'store'
