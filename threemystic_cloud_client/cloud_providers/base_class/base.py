@@ -69,7 +69,18 @@ class cloud_client_provider_base(base):
   @abstractmethod
   def make_account(self, account, *args, **kwargs):
     pass  
+  
+  @abstractmethod
+  def get_resource_group_from_resource(self, account, *args, **kwargs):
+    pass
 
+  def get_resource_location(self, resource, *args, **kwargs):
+    if resource is None:
+      return None
+    
+  def serialize_resource(self, *args, **kwargs):    
+    return None
+    
   def __load_config(self, *args, **kwargs):
     config_data = self.get_common().helper_config().load(
       path= self.config_path(),

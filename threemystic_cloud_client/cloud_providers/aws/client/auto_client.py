@@ -6,6 +6,8 @@ class cloud_client_aws_client_auto(base):
 
     self.__set_profile(*args, **kwargs)
   
+  def get_resource_group_from_resource(self, account, *args, **kwargs):
+    pass
   
   def get_profile(self, *args, **kwargs):
     if(not hasattr(self, "_profile")):
