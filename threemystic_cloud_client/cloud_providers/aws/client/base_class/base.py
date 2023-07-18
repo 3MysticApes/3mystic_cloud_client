@@ -42,7 +42,7 @@ class cloud_client_aws_client_base(base):
     pass
   
   @abstractmethod
-  def authenticate_session(self, *args, **kwargs):
+  def authenticate_session(self, force_quiet = False, *args, **kwargs):
     pass
   
   def _post_init(self, *args, **kwargs):

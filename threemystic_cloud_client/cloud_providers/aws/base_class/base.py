@@ -8,7 +8,6 @@ from polling2 import TimeoutException, poll as poll2
 import time
 from random import randint
 
-
 class cloud_client_provider_aws_base(base):
   def __init__(self, *args, **kwargs):
     # https://github.com/boto/botocore/issues/2705 

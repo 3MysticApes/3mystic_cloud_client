@@ -86,6 +86,9 @@ class cloud_client_aws_token_step_1(base):
       profile_name= self._processed_arg_info.get("token_profile")
     )
 
+    if aws_client.session_expired():
+      aws_client.authenticate_session(force_quiet= True)
+    
     token_format = self.get_common().helper_type().string().set_case(string_value= self._processed_arg_info.get("token_format"), case= "lower")
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= self._processed_arg_info.get("token_format")):
       token_format = "cli"

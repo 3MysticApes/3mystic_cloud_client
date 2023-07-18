@@ -123,9 +123,9 @@ class cloud_client_aws_client_sso(base):
     return self.get_common().helper_type().datetime().is_token_expired_now(compare_datetime= self._get_session_expires(refresh= refresh))
     
     
-  def authenticate_session(self, *args, **kwargs):
+  def authenticate_session(self, force_quiet = False, *args, **kwargs):
     if(self.get_profile()['profile_data']['use_cli_profile']):
-      self.__aws_sso_login_profile()
+      self.__aws_sso_login_profile(force_quiet= force_quiet)
       return
     
     raise self.get_common().exception().exception(
@@ -136,7 +136,7 @@ class cloud_client_aws_client_sso(base):
       message = f"Cloud Client Profile not loaded"
     )
 
-  def __aws_sso_login_profile(self, *args, **kwargs):
+  def __aws_sso_login_profile(self, force_quiet = False, *args, **kwargs):
     if(not self._has_aws_sso_config_profile()):
       raise self.get_common().exception().exception(
         exception_type = "generic"
@@ -147,6 +147,8 @@ class cloud_client_aws_client_sso(base):
       )
     
     ssologin_call = f"aws sso login --profile {self.get_profile()['profile_data']['sso_profile_name']}"
+    if force_quiet:
+      ssologin_call = f'{ssologin_call} 1>/dev/null'
     if os.system(ssologin_call) != 0:
       raise self.get_common().exception().exception(
         exception_type = "generic"
