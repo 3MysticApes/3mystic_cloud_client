@@ -94,7 +94,7 @@ class cloud_client_provider_aws_base(base):
   def _set_default_region_resources(self, value):
     self._default_region_resources = value
 
-  def get_resource_general_arn(cls, resource_type = None, resource_type_sub = None, account_id = None, region = None, id = None, data_item = None, **kwargs ):
+  def get_resource_general_arn(self, resource_type = None, resource_type_sub = None, account_id = None, region = None, id = None, data_item = None, **kwargs ):
     if data_item is not None:
       lower_keys = [key.lower() for key in data_item.keys()]
       if "arn" in lower_keys:
