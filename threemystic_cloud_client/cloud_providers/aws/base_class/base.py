@@ -227,9 +227,9 @@ class cloud_client_provider_aws_base(base):
         currentAttempt+=1  
         try:  
           if boto_params is not None:
-            boto_response = boto_call(boto_params)  
+            boto_response = boto_call(boto_params)
           else:
-            boto_response = boto_call()  
+            boto_response = boto_call()
           break          
         except ClientError as err:
           if error_codes_raise is not None and self.get_common().helper_type().string().set_case(string_value= err.response["Error"]["Code"], case= "lower") in error_codes_raise:
@@ -238,7 +238,7 @@ class cloud_client_provider_aws_base(base):
             ).type_error(
               logger = self.get_common().get_logger(),
               name = "General Boto Call Raise",
-              message = f"Profile was not set",
+              message = f"error_codes_raise - {boto_call} - {error_codes_raise} - {err}",
               exception= err
             )
 
@@ -672,7 +672,7 @@ class cloud_client_provider_aws_base(base):
 
     return [ acct for acct in all_accounts if f'-{self.get_account_id(account= acct) }' not in exclude_accounts and  (len(account) < 1 or self.get_common().helper_type().list().find_item(data= account, filter= lambda item: self.get_account_id(account= item)  == self.get_account_id(account= acct)) is not None) ]
   
-  def get_resource_groups(self, account, region, filters = [], rg_client = None):
+  def get_resource_groups(self, account, region, filters_rg = [], rg_client = None):
     if rg_client is None:
       rg_client = self.get_boto_client(
         client= 'resource-groups', 
@@ -682,8 +682,8 @@ class cloud_client_provider_aws_base(base):
       )
 
     boto_params = {}
-    if len(filters) > 0:
-      boto_params["Filters"] = filters
+    if len(filters_rg) > 0:
+      boto_params["Filters"] = filters_rg
 
     return self.general_boto_call_array(
       boto_call=lambda item: rg_client.list_groups(**item),
@@ -692,7 +692,7 @@ class cloud_client_provider_aws_base(base):
       boto_key="GroupIdentifiers"
     )
   
-  def get_resource_group_from_resource(self, account, region, filters_rg = [], filters_resource = [], aws_client = None, rg_client = None, resource_groups = None, treat_badfilter_err_as_empty = True):
+  def get_resource_group_from_resource(self, account, region, filters_rg = [], filters_resource = [], rg_client = None, resource_groups = None, treat_badfilter_err_as_empty = True):
     if rg_client is None:
       rg_client = self.get_boto_client(
         client= 'resource-groups', 
@@ -736,6 +736,8 @@ class cloud_client_provider_aws_base(base):
           continue
         raise err
       except Exception as err:
+        if treat_badfilter_err_as_empty and "filters not valid" in str(err).lower():
+          continue
         raise err
 
     return resources
