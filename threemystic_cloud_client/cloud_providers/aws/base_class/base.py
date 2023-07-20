@@ -529,7 +529,7 @@ class cloud_client_provider_aws_base(base):
     utc_now = self.get_common().helper_type().datetime().get()
     time_period = {
       "Start":(self.get_common().helper_type().datetime().datetime_as_string(
-        dt= (utc_now + self.get_common().helper_type().datetime().time_delta(monts= -1, dt= utc_now)),
+        dt= (utc_now + self.get_common().helper_type().datetime().time_delta(months= -1, dt= utc_now)),
         dt_format= "%Y-%m-%d"
       )),
       "End": (self.get_common().helper_type().datetime().datetime_as_string(
