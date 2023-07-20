@@ -407,7 +407,7 @@ class cloud_client_provider_aws_base(base):
       region = self.get_default_region()
     
     if self.get_common().helper_type().string().is_null_or_whitespace(string_value= role):
-      region = self.get_default_rolename()
+      role = self.get_default_rolename()
 
     if account is None or (self.get_common().helper_type().general().is_type(obj= account, type_check= str) and self.get_common().helper_type().string().is_null_or_whitespace(string_value= account)):
       account = self.get_default_account()
