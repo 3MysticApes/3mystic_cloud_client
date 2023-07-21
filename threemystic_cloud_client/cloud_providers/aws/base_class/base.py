@@ -261,7 +261,8 @@ class cloud_client_provider_aws_base(base):
               logger = self.get_common().get_logger(),
               name = "General Boto Call Raise",
               message = f"error_codes_raise - {err.response['Error']['Code']} - {err.response['ResponseMetadata']['RequestId']} - {err.response['Error']['Message']}",
-              exception= err
+              exception= err,
+              log_as_warning = True
             )
 
           if error_codes_continue is not None and self.get_common().helper_type().string().set_case(string_value= err.response["Error"]["Code"], case= "lower") in error_codes_continue:
@@ -277,7 +278,8 @@ class cloud_client_provider_aws_base(base):
               logger = self.get_common().get_logger(),
               name = "General Boto Call accessdeniedexception",
               message = f"accessdeniedexception - {err.response['Error']['Code']} - {err.response['ResponseMetadata']['RequestId']} - {err.response['Error']['Message']}",
-              exception= err
+              exception= err,
+              log_as_warning = True
             )
           
           if err.response['Error']["Code"] == 'SlowDown':
@@ -302,7 +304,8 @@ class cloud_client_provider_aws_base(base):
               logger = self.get_common().get_logger(),
               name = "General Boto Call err retry ",
               message = f"err_retrycount - {currentAttempt} - {retryCount}",
-              exception= err
+              exception= err,
+              log_as_warning = True
             )
             
           if currentAttempt > 2:
