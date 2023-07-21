@@ -182,21 +182,21 @@ class cloud_client_provider_azure_base(base):
       return None
 
     return aztype.deserialize(resource)
-
-  def get_resource_name_from_resource(self, resource, *args, **kwargs):
+  
+  def get_resource_name(self, resource, *args, **kwargs):
     if resource is None:
-        return None
-    
+      return None
+
     if self.get_common().helper_type().general().is_type(obj= resource, type_check= str):
       return resource
-
+    
     if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
-      return resource.get("name")     
+      return self.get_resource_name(resource= resource.get("extra_name") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=resource.get("extra_name")) else resource.get("name"))
 
-    return resource.name
+    return self.get_resource_name(resource= getattr(resource, "name"))
 
-  def get_resource_id_short_from_resource(self, resource, include_resource_group = False, *args, **kwargs):
-    resource_id = self.get_resource_id_from_resource(resource= resource)
+  def get_resource_id_short(self, resource, include_resource_group = False, *args, **kwargs):
+    resource_id = self.get_resource_id(resource= resource)
     resource_id = resource_id[resource_id.rfind("/resourcegroups/"):]
 
     if include_resource_group:
@@ -204,7 +204,7 @@ class cloud_client_provider_azure_base(base):
 
     return resource_id.append(resource_id[resource_id.rfind("/providers/"):])
 
-  def get_resource_id_from_resource(self, resource, *args, **kwargs):
+  def get_resource_id(self, resource, *args, **kwargs):
     if resource is None:
         return None
     
@@ -246,23 +246,12 @@ class cloud_client_provider_azure_base(base):
     
     resource_id_split = self.get_common().helper_type().string().split(
       string_value= self.get_common().helper_type().string().set_case(
-        string_value= self.get_resource_id_from_resource(resource= resource), 
+        string_value= self.get_resource_id(resource= resource), 
         case= "lower"),
       separator="/",
       regex_split= False
     )
     return resource_id_split[resource_id_split.index("resourcegroups") + 1]
-  
-  def get_resource_name(self, resource, *args, **kwargs):
-    if resource is None:
-      return None
-
-    if not self.get_common().helper_type().general().is_type(obj= resource, type_check= str):
-      if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
-          return self.get_resource_name(resource= resource.get("extra_name") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=resource.get("extra_name")) else resource.get("name"))
-      return self.get_resource_name(resource= getattr(resource, "name"))
-
-    return resource
   
   def get_resource_location(self, resource, *args, **kwargs):
     if resource is None:

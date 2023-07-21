@@ -21,6 +21,27 @@ class cloud_client_provider_aws_base(base):
       "saml2aws_doc_link": "https://github.com/Versent/saml2aws"
     }
 
+  def get_resource_name(self, resource, *args, **kwargs):
+    if resource is None:
+      return None
+
+    if self.get_common().helper_type().general().is_type(obj= resource, type_check= str):
+      return resource
+    
+    if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+      for key in resource.keys():
+        if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") == "name":
+          return self.resource_tags(resource= resource.get(key))
+        
+      resource_tags = self.get_resource_tags_as_dictionary(resource= resource)
+      if resource_tags is None:
+        return None
+      if len(resource_tags) < 1:
+        return None
+      return self.resource_tags(resource= resource)
+
+    return resource
+  
   def get_account_name(self, account):
     if account is None:
       return None
