@@ -12,7 +12,7 @@ class cloud_client_provider_aws_base(base):
   def __init__(self, *args, **kwargs):
     # https://github.com/boto/botocore/issues/2705 
     # This update should be temporary until boto version 1.28 is released
-    os.environ["BOTO_DISABLE_COMMONNAME"] = "true" 
+    # os.environ["BOTO_DISABLE_COMMONNAME"] = "true"
 
     super().__init__(provider= "aws", *args, **kwargs)   
     self.links = {
@@ -749,20 +749,10 @@ class cloud_client_provider_aws_base(base):
             resources[resource.get("Identifier").get("ResourceArn").lower()] = []
           
           resources[resource.get("Identifier").get("ResourceArn").lower()].append(rg["GroupName"])
-          
-      except ClientError as err:
-        print(f'ClientError - Start - {treat_badfilter_err_as_empty} - {str(err).lower()}')
-        if treat_badfilter_err_as_empty and "filters not valid" in str(err).lower():
-          continue
-        print(f'ClientErrorRaise - End - {treat_badfilter_err_as_empty} - {str(err).lower()}')
-
-        raise err
       
       except Exception as err:
-        print(f'Exception - Start - {treat_badfilter_err_as_empty} - {str(err).lower()}')
         if treat_badfilter_err_as_empty and "filters not valid" in str(err).lower():
           continue
-        print(f'ExceptionRaise - End - {treat_badfilter_err_as_empty} - {str(err).lower()}')
 
         raise err
 
