@@ -31,7 +31,7 @@ class cloud_client_provider_aws_base(base):
     if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
       for key in resource.keys():
         if self.get_common().helper_type().string().set_case(string_value= key, case= "lower") == "name":
-          return self.resource_tags(resource= resource.get(key))
+          return self.get_resource_name(resource= resource.get(key))
         
       resource_tags = self.get_resource_tags_as_dictionary(resource= resource)
       if resource_tags is None:
