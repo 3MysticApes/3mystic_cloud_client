@@ -38,9 +38,10 @@ class cloud_client_provider_aws_base(base):
         return None
       if len(resource_tags) < 1:
         return None
-      return self.resource_tags(resource= resource)
+      
+      return self.get_resource_name(resource= resource)
 
-    return resource
+    return None
   
   def get_account_name(self, account):
     if account is None:
