@@ -259,7 +259,7 @@ class cloud_client_provider_aws_base(base):
             ).type_error(
               logger = self.get_common().get_logger(),
               name = "General Boto Call Raise",
-              message = f"error_codes_raise - {boto_call} - {error_codes_raise} - {err}",
+              message = f"error_codes_raise - {err.response['Error']['Code']} - {err.response['ResponseMetadata']['RequestId']} - {err.response['Error']['Message']}",
               exception= err
             )
 
@@ -275,12 +275,12 @@ class cloud_client_provider_aws_base(base):
             ).type_error(
               logger = self.get_common().get_logger(),
               name = "General Boto Call accessdeniedexception",
-              message = f"accessdeniedexception - {boto_call} - {boto_params}",
+              message = f"accessdeniedexception - {err.response['Error']['Code']} - {err.response['ResponseMetadata']['RequestId']} - {err.response['Error']['Message']}",
               exception= err
             )
           
           if err.response['Error']["Code"] == 'SlowDown':
-            time.sleep(30)
+            time.sleep(self.get_common().helper_type().requests().expodential_backoff_wait(attempt= currentAttempt, auto_sleep= False))
             if slowdown_count < 5:
               currentAttempt-=1
             continue
@@ -300,19 +300,16 @@ class cloud_client_provider_aws_base(base):
             ).type_error(
               logger = self.get_common().get_logger(),
               name = "General Boto Call err retry ",
-              message = f"accessdeniedexception - {boto_call} - {boto_params}",
+              message = f"err_retrycount - {currentAttempt} - {retryCount}",
               exception= err
             )
             
           if currentAttempt > 2:
-            logger.exception(msg= "Error with call: {}".format(err), exc_info= err)
+            self.get_common().get_logger().exception(msg= "Error with call: {}".format(err), exc_info= err)
             if verbose:
               self.get_common().get_logger().info(msg= "Error with call: {}".format(err))
 
-          sleepTime = (2**currentAttempt)+randint(1,10)
-          if sleepTime > 30:
-            sleepTime = 30
-          time.sleep(sleepTime)
+          time.sleep(self.get_common().helper_type().requests().expodential_backoff_wait(attempt= currentAttempt, auto_sleep= False))
           continue      
 
       if boto_response is None or boto_key is None:
@@ -763,7 +760,7 @@ class cloud_client_provider_aws_base(base):
 
     return resources
   
-def get_resource_tags_as_dictionary(self, resource, *args, **kwargs):
+  def get_resource_tags_as_dictionary(self, resource, *args, **kwargs):
     if resource is None:
       return None
 
