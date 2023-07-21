@@ -116,14 +116,14 @@ class cloud_client_provider_aws_base(base):
   def _set_default_region_resources(self, value):
     self._default_region_resources = value
 
-  def get_resource_general_arn(self, resource_type = None, resource_type_sub = None, account_id = None, region = None, id = None, data_item = None, **kwargs ):
+  def get_resource_general_arn(self, resource_type = None, resource_type_sub = None, account_id = None, region = None, resource_id = None, data_item = None, **kwargs ):
     if data_item is not None:
       lower_keys = [key.lower() for key in data_item.keys()]
       if "arn" in lower_keys:
         arn_key = list(data_item.keys())[lower_keys.index("arn")]
         return self.get_common().helper_type().string().set_case(string_value= data_item[arn_key], case= "lower")
 
-    return self.get_common().helper_type().string().set_case(string_value= f'arn:aws:{resource_type}:{region}:{account_id}:{resource_type_sub}/{id}', case= "lower")
+    return self.get_common().helper_type().string().set_case(string_value= f'arn:aws:{resource_type}:{region}:{account_id}:{resource_type_sub}/{resource_id}', case= "lower")
   
   def _get_boto_client_key(self, client, account = None, region = None, *args, **kwargs):
     
