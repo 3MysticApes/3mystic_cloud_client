@@ -246,13 +246,13 @@ class cloud_client_provider_aws_base(base):
       slowdown_count = 0
       
       while currentAttempt < retryCount:
-        currentAttempt+=1  
-        try:  
+        currentAttempt += 1
+        try:
           if boto_params is not None:
             boto_response = boto_call(boto_params)
           else:
             boto_response = boto_call()
-          break          
+          break       
         except ClientError as err:
           if error_codes_raise is not None and self.get_common().helper_type().string().set_case(string_value= err.response["Error"]["Code"], case= "lower") in error_codes_raise:
             raise self.get_common().exception().exception(
@@ -751,12 +751,19 @@ class cloud_client_provider_aws_base(base):
           resources[resource.get("Identifier").get("ResourceArn").lower()].append(rg["GroupName"])
           
       except ClientError as err:
+        print(f'ClientError - Start - {treat_badfilter_err_as_empty} - {str(err).lower()}')
         if treat_badfilter_err_as_empty and "filters not valid" in str(err).lower():
           continue
+        print(f'ClientErrorRaise - End - {treat_badfilter_err_as_empty} - {str(err).lower()}')
+
         raise err
+      
       except Exception as err:
+        print(f'Exception - Start - {treat_badfilter_err_as_empty} - {str(err).lower()}')
         if treat_badfilter_err_as_empty and "filters not valid" in str(err).lower():
           continue
+        print(f'ExceptionRaise - End - {treat_badfilter_err_as_empty} - {str(err).lower()}')
+
         raise err
 
     return resources
