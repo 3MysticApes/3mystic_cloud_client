@@ -78,8 +78,20 @@ class cloud_client_provider_base(base):
     if resource is None:
       return None
     
-  def serialize_resource(self, *args, **kwargs):    
-    return None
+  def serialize_resource(self, resource, *args, **kwargs):
+    if resource is None:
+      return None
+    
+    if not self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+      raise self.get_common().exception().exception(
+        exception_type = "argument"
+      ).type_error(
+        logger = self.get_common().get_logger(),
+        name = "resource",
+        message = f"Unknown argument type - resource {type(resource)}"
+      )
+      
+    return resource
     
   def __load_config(self, *args, **kwargs):
     config_data = self.get_common().helper_config().load(
