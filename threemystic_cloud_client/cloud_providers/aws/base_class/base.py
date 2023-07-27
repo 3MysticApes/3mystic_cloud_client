@@ -745,8 +745,8 @@ class cloud_client_provider_aws_base(base):
     if resource_groups is None or (resource_groups is not None and len(resource_groups)<1):
       resource_groups = self.get_resource_groups(account=account, region= region,filters=filters_rg, rg_client= rg_client)
 
-    if resource_groups is None or (resource_groups is not None and len(resource_groups)<1):
-      return {}
+      if resource_groups is None or (resource_groups is not None and len(resource_groups)<1):
+        return {}
 
     resources = {} 
     boto_params = {}
