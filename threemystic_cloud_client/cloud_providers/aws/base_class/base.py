@@ -601,16 +601,18 @@ class cloud_client_provider_aws_base(base):
         boto_key="ResultsByTime"
       )
 
-      regions = []
+      regions = {}
 
       for itemTime in discovered_resultsbytime:
         for itemGroup in itemTime["Groups"]:
           for item in itemGroup["Keys"]:
-            if self.get_common().helper_type().string().set_case(string_value= item, case= "lower") == "noregion":
+            item_key = self.get_common().helper_type().string().set_case(string_value= item, case= "lower")
+            if item_key == "noregion":
               continue
-            if not item in regions:
-              regions.append(item)
+            if not item_key in regions:
+              regions[item_key] = item
       return regions
+    
     except Exception as err:
       self.get_common().get_logger().exception(msg=f"Could not pull regions dynamically: {err}", exc_info= err)
       return self.default_region_resources
@@ -632,7 +634,6 @@ class cloud_client_provider_aws_base(base):
   def get_account_regions_costexplorer(self, account, role, services):     
     # to get a list of all services for an account
     # aws ce get-dimension-values --time-period "Start=2022-09-01,End=2022-09-11" --dimension SERVICE
-    regions = { }
 
     return self._get_account_regions_costexplorer(
       account= account, 
