@@ -3,7 +3,7 @@ import os
 from botocore import session as botocore_session, credentials as botocore_credentials
 from botocore.config import Config as botocore_config_config
 from boto3 import Session as boto_session
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, SSLError
 from polling2 import TimeoutException, poll as poll2
 import time
 from random import randint
@@ -315,7 +315,21 @@ class cloud_client_provider_aws_base(base):
               self.get_common().get_logger().info(msg= "Error with call: {}".format(err))
 
           time.sleep(self.get_common().helper_type().requests().expodential_backoff_wait(attempt= currentAttempt, auto_sleep= False))
-          continue      
+          continue
+        except SSLError as err:
+          if currentAttempt >= retryCount:
+            boto_response = None
+            raise self.get_common().exception().exception(
+              exception_type = "generic"
+            ).type_error(
+              logger = self.get_common().get_logger(),
+              name = "General Boto Call err retry ",
+              message = f"SSLError - err_retrycount - {currentAttempt} - {retryCount}",
+              exception= err,
+              log_as_warning = True
+            )
+          continue
+
 
       if boto_response is None or boto_key is None:
         return [ ]
@@ -703,6 +717,10 @@ class cloud_client_provider_aws_base(base):
         role = None,
         region = region
       )
+    
+    # Global does not seem like a valid option
+    if (self.get_common().helper_type().string().set_case(string_value= region, case= "lower") == "global"):
+        return []
 
     boto_params = {}
     if len(filters_rg) > 0:
