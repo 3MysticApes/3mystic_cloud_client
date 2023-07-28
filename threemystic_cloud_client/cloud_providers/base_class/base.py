@@ -73,7 +73,10 @@ class cloud_client_provider_base(base):
   @abstractmethod
   def get_resource_group_from_resource(self, account, *args, **kwargs):
     pass
-
+  
+  def get_account_prefix(self, *args, **kwargs):
+    return ""
+  
   def get_resource_location(self, resource, *args, **kwargs):
     if resource is None:
       return None
