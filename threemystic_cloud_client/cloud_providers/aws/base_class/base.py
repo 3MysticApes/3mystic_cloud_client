@@ -614,6 +614,7 @@ class cloud_client_provider_aws_base(base):
       return regions
     
     except Exception as err:
+      print(err)
       self.get_common().get_logger().exception(msg=f"Could not pull regions dynamically: {err}", extra= {"exception": err})
       return {
         self.get_common().helper_type().string().set_case(string_value= region, case= "lower"):region for region in self.default_region_resources
