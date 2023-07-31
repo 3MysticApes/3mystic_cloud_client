@@ -220,7 +220,7 @@ class cloud_client_provider_aws_base(base):
       return None
     
     return data[0]
-
+  
   def general_boto_call_array(self, boto_call, boto_params, boto_key, boto_nextkey, retryCount = 10, verbose = False, boto_nextkey_param = None, error_codes_return = None, error_codes_continue = None, error_codes_raise = None, logger = None):
     return_data = []
 
@@ -616,7 +616,7 @@ class cloud_client_provider_aws_base(base):
     except Exception as err:
       self.get_common().get_logger().exception(msg=f"Could not pull regions dynamically: {err}", exc_info= err)
       return self.default_region_resources
-    
+  
   def get_accounts_regions_costexplorer(self, accounts, services, role= None):     
     if role is None:
       role = self.get_default_rolename()
@@ -640,6 +640,106 @@ class cloud_client_provider_aws_base(base):
       role= role,
       services= services
     )
+  
+  def _get_regions_for_resource_configurationaggregator(self, account, role, configuration_accountId, configuration_aggregatorName, configuration_aggregatorRegion, configuration_aggregator_recourcetype):
+    
+    config_client = self.get_boto_client(
+      client= "config",
+      account= self.make_account(Id= configuration_accountId),
+      role= role,
+      region= configuration_aggregatorRegion)
+
+    retryCount = 10
+    currentAttempt = 0
+
+    filter = {}
+    filter["AccountId"] = self.get_account_id(account)    
+    filter["ResourceType"] =configuration_aggregator_recourcetype
+
+
+    while currentAttempt < retryCount:
+      currentAttempt+=1
+
+      try:
+        discovered_resources = config_client.get_aggregate_discovered_resource_counts(
+          ConfigurationAggregatorName = configuration_aggregatorName,
+          GroupByKey = "AWS_REGION",
+          Filters=filter
+          
+        )
+        break
+      except ClientError as err:
+        if currentAttempt > 2:
+          self.get_common().get_logger().exception(msg=f"_get_regions_for_resource: {err}", extra= {"exception": err})
+        discovered_resources = None
+        sleepTime = (2**currentAttempt)+randint(1,10)
+        if sleepTime > 30:
+          sleepTime = 30
+        time.sleep(sleepTime)
+
+    if discovered_resources is None:
+      return { }
+
+    regions = {self.get_account_id(account):[] }
+    for item in discovered_resources["GroupedResourceCounts"]:
+
+      if item["GroupName"] in regions[self.get_account_id(account)]:
+        continue
+
+      regions[self.get_account_id(account)].append(item["GroupName"])
+  
+    while "NextToken" in discovered_resources:
+      currentAttempt = 0
+      nextToken = discovered_resources["NextToken"]
+
+      while currentAttempt < retryCount:
+        currentAttempt+=1  
+        try:  
+          discovered_resources = config_client.get_aggregate_discovered_resource_counts(
+            ConfigurationAggregatorName = configuration_aggregatorName,
+            GroupByKey = "AWS_REGION",
+            Filters=filter,
+            NextToken= nextToken
+          )            
+          break
+            
+        except ClientError as err:
+          if currentAttempt > 2:
+            self.get_common().get_logger().exception(msg=f"_get_regions_for_resource - next loop: {err}", extra= {"exception": err})
+            print("_get_regions_for_resource - next loop: {}".format(err))
+          sleepTime = (2**currentAttempt)+randint(1,10)
+          if sleepTime > 30:
+            sleepTime = 30
+          time.sleep(sleepTime)        
+      
+      for item in discovered_resources["GroupedResourceCounts"]:
+        if item["GroupName"] in regions[self.get_account_id(account)]:
+          continue
+
+        regions[self.get_account_id(account)].append(item["GroupName"])
+
+
+    return regions
+  
+  def get_regions_account_configurationaggregator(self, accounts, role, configuration_accountId, configuration_aggregatorName, configuration_aggregatorRegion, configuration_aggregator_recourcetype):
+    regions = { }
+
+    for account in accounts:
+      if self.verbose:
+        if "accountName" in account:
+          print("Getting Regions for Account: {} ({})".format(self.get_account_name(account),self.get_account_id(account)))
+        else:
+          print("Getting Regions for Account: {}".format(self.get_account_id(account)))
+      for resource_type in configuration_aggregator_recourcetype:
+        tmpregions = self._get_regions_for_resource_configurationaggregator(account, role, configuration_accountId, configuration_aggregatorName, configuration_aggregatorRegion, resource_type)
+        for item in tmpregions:
+          if item in regions:
+            regions[item] = list(set(regions[item] + tmpregions[item]))    
+            continue
+
+          regions[item] = tmpregions[item]
+
+    return regions
   
   def _get_accounts(self, refresh = False, include_suspended = False):
     
