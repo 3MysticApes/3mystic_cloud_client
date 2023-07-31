@@ -574,7 +574,7 @@ class cloud_client_provider_aws_base(base):
         dt_format= "%Y-%m-%d"
       ))
     }   
-    metrics = ["NET_UNBLENDED_COST"]
+    metrics = ["NETUNBLENDEDCOST"]
     group_by= [{"Type":"DIMENSION", "Key":"REGION"}]
 
     get_cost_usage_params = {
