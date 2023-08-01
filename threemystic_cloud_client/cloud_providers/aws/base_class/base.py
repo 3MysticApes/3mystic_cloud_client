@@ -554,7 +554,7 @@ class cloud_client_provider_aws_base(base):
     return self.get_boto_session(account=account, role = role, region = region, profile = profile, *args, **kwargs)
   
   def _get_account_regions_costexplorer(self, account, services = None, *args, **kwargs ):
-    self.get_common().get_logger().setLevel(level= 20)
+    
     ce_client = self.get_boto_client(
       client= "ce",
       account=account
@@ -611,13 +611,10 @@ class cloud_client_provider_aws_base(base):
               continue
             if not item_key in regions:
               regions[item_key] = item
-      self.get_common().get_logger().setLevel(level= 40)
       return regions
     
     except Exception as err:
-      
       self.get_common().get_logger().exception(msg=f"Could not pull regions dynamically: {err}", extra= {"exception": err})
-      self.get_common().get_logger().setLevel(level= 40)
       return {
         self.get_common().helper_type().string().set_case(string_value= region, case= "lower"):region for region in self.default_region_resources
       }
