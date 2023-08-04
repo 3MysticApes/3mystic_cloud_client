@@ -561,7 +561,7 @@ class cloud_client_provider_aws_base(base):
     )
 
     filter = {}
-    granularity = "DAILY"
+    granularity = "MONTHLY"
     
     utc_now = self.get_common().helper_type().datetime().get()
     time_period = {
