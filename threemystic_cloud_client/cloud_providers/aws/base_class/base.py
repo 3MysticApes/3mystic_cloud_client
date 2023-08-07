@@ -331,19 +331,28 @@ class cloud_client_provider_aws_base(base):
           continue
 
 
-      if boto_response is None or boto_key is None:
+      if boto_response is None:
         return [ ]
+      
+      if boto_key is None:
+        return_data.append(boto_response)
         
+      if boto_key is not None:
+        if not self.get_common().helper_type().general().is_type(obj= boto_key(boto_response), type_check= list):
+          return [ boto_key(boto_response) ]
 
-      if not self.get_common().helper_type().general().is_type(obj= boto_key(boto_response), type_check= list):
-        return [ boto_key(boto_response) ]
+        return_data += boto_key(boto_response)
 
-      return_data += boto_key(boto_response)
-
-      if (boto_nextkey is None) or (boto_nextkey is not None and self.get_common().helper_type().string().is_null_or_whitespace(string_value= boto_response.get(boto_nextkey))) or boto_params is None:
+      if (boto_nextkey is None) or (boto_nextkey is not None and self.get_common().helper_type().string().is_null_or_whitespace(string_value= boto_response.get(boto_nextkey))):
         return return_data
 
-      boto_params[boto_nextkey_param] = boto_response.get(boto_nextkey)
+      if boto_params is not None:
+        boto_params[boto_nextkey_param] = boto_response.get(boto_nextkey)
+        continue
+
+      boto_params= {
+        boto_nextkey_param: boto_response.get(boto_nextkey)
+      }
 
   def get_organization_account(self, *args, **kwargs):
     if(hasattr(self, "_organization_account")):
