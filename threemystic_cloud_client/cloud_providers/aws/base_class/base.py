@@ -253,7 +253,7 @@ class cloud_client_provider_aws_base(base):
             break
           
           boto_response = boto_call()
-          break  
+          break
         except ClientError as err:
           if error_codes_raise is not None and self.get_common().helper_type().string().set_case(string_value= err.response["Error"]["Code"], case= "lower") in error_codes_raise:
             raise self.get_common().exception().exception(
