@@ -42,6 +42,23 @@ class cloud_client_action_base():
     if provider == "aws":
       self._process_provider_aws()
   
+  def provider_config_status(self, provider = None, *args, **kwargs):
+    provider = self._cloud_client.get_common().helper_type().string().set_case(string_value= provider, case= "lower")
+
+    if provider not in self._cloud_client.get_supported_providers():
+      return
+    
+    if provider == "azure":
+      from threemystic_cloud_client.cloud_providers.azure import cloud_client_azure as client
+      return client(common= self._cloud_client).is_provider_config_completed()
+
+    
+    if provider == "aws":
+      from threemystic_cloud_client.cloud_providers.aws  import cloud_client_aws as client
+      return client(common= self._cloud_client).is_provider_config_completed()
+    
+    return None
+
   @abstractmethod
   def _process_provider_aws(self, *args, **kwargs):
     pass

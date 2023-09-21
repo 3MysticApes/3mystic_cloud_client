@@ -14,7 +14,4 @@ class cloud_client_config(base):
   def _process_provider_azure(self, *args, **kwargs):
       from threemystic_cloud_client.cloud_providers.azure import cloud_client_azure as client
       client(common= self._cloud_client).action_config()
-
       
-
-  

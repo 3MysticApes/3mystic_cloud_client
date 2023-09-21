@@ -1,6 +1,7 @@
 import sys
 from threemystic_common.base_class.base_script_options import base_process_options
 from threemystic_cloud_client.cloud_client import cloud_client as threemystic_client
+from threemystic_cloud_client.cli.actions.config import cloud_client_config as user_action_config
 
 class cloud_client_cli(base_process_options):
   def __init__(self, cloud_client = None, *args, **kwargs):    
@@ -91,8 +92,7 @@ class cloud_client_cli(base_process_options):
       self.parser.print_usage()
 
     if force_action == "config":
-      from threemystic_cloud_client.cli.actions.config import cloud_client_config as user_action
-      user_action(cloud_client= self._cloud_client).main(provider= self.__get_client_provider())
+      user_action_config(cloud_client= self._cloud_client).main(provider= self.__get_client_provider())
       return
 
     if force_action == "test":
@@ -117,6 +117,11 @@ class cloud_client_cli(base_process_options):
     print(f"3mystic_cloud_client: v{self._cloud_client.version()}")
     print(f"3mystic_common: v{self._cloud_client.get_common().version()}")
     print()
+    print(f"Current supported cloud providers: {self._cloud_client.get_supported_providers()}")
+    print(f"Cloud Providers config status: ")
+    for cloud_provider in self._cloud_client.get_supported_providers():
+      print(f"{cloud_provider}:  {user_action_config(cloud_client= self._cloud_client).provider_config_status(provider= cloud_provider)}")
+    
 
   def __get_client_provider(self, *args, **kwargs):
     if not hasattr(self, "_client_provider"):
