@@ -23,7 +23,7 @@ class cloud_client_provider_base(base):
                 "validation": f"Valid options for Yes are: {self.get_common().helper_type().bool().is_true_values()}",
               },
               "conversion": lambda item: self.get_common().helper_type().bool().is_true(check_value= item),
-              "desc": f"Do you want to setup another provider?: {self.get_common().helper_type().bool().is_true_values()}",
+              "desc": f"Do you want to setup another Cloud Client provider?: {self.get_common().helper_type().bool().is_true_values()}",
               "default": None,
               "handler": generate_data_handlers.get_handler(handler= "base"),
               "optional": True
