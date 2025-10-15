@@ -10,7 +10,7 @@ name = "threemystic-cloud-client"
 description = "A tool to help facilitate the communication with various cloud providers"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 authors = [
   { name="Ron Truex" },
 ]
