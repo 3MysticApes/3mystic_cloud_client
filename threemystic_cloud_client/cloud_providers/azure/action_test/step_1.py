@@ -22,7 +22,7 @@ class cloud_client_azure_test_step_1(base):
     
     print(f"You have the following accounts:")
     for account in azure_client.get_accounts():
-      print(f"{azure_client.get_account_id(account= account)}:{azure_client.get_account_name(account= account)}")
+      print(f"{azure_client.get_tenant_id(tenant= account, is_account=True)}:{azure_client.get_account_id(account= account)}:{azure_client.get_account_name(account= account)}")
 
     print()
     print()

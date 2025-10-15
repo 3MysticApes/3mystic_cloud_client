@@ -22,7 +22,7 @@ class cloud_client_aws_test_step_2(base):
     print(f"Org Account ID: {aws_client.get_organization_account_id()}")
     print(f"You have the following accounts:")
     for account in aws_client.get_accounts():
-      print(f"{aws_client.get_account_id(account= account)}:{aws_client.get_account_name(account= account)}")
+      print(f"{aws_client.get_tenant_id(tenant= account, is_account=True)}:{aws_client.get_account_id(account= account)}:{aws_client.get_account_name(account= account)}")
     
 
     
