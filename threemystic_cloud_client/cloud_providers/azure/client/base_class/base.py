@@ -250,6 +250,7 @@ class cloud_client_azure_client_base(base):
   def __get_accounts(self, refresh = False, *args, **kwargs):   
     
     accounts = self.get_group_accounts_by_tenant(refresh= refresh, *args, **kwargs)
+    
     subscriptions = {}
     for tenant_id, tenant_accounts in accounts.items():
       # pulls all subscriptions to know which ones are resourcecontainers
@@ -269,8 +270,10 @@ class cloud_client_azure_client_base(base):
           continue
         
         subscription.resource_container = True
+    if(len(subscriptions) < 1):
+      return []
     
-    return self.get_common().helper_type().list().flatten(data= list(subscriptions.values()))
+    return self.get_common().helper_type().list().flatten(data= [item for item in list(subscriptions.values()) if item is not None])
             
   def get_accounts(self, account= None, tenant= None, refresh= False, *args, **kwargs):      
     return self.__get_accounts(account= account, tenant= tenant, refresh= refresh, *args, **kwargs)
