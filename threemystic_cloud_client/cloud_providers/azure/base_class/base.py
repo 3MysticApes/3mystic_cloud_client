@@ -190,7 +190,12 @@ class cloud_client_provider_azure_base(base):
     if self.get_common().helper_type().general().is_type(obj= resource, type_check= str):
       return resource
     
+    resource_name = None
     if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+      resource_name = self.get_common().helper_type().general().get_container_value(container= resource, value_key= ["extra_data", "name"])
+      if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=resource_name):
+        return resource_name
+      
       return self.get_resource_name(resource= resource.get("extra_name") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=resource.get("extra_name")) else resource.get("name"))
 
     return self.get_resource_name(resource= getattr(resource, "name"))
@@ -212,6 +217,13 @@ class cloud_client_provider_azure_base(base):
       return resource
 
     if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+      resource_id = self.get_common().helper_type().general().get_container_value(container= resource, value_key= ["extra_data", "id"])
+      if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=resource_id):
+        return self.get_common().helper_type().string().set_case(
+          string_value= resource_id, 
+          case= "lower"
+        )
+      
       if "extra_id" in resource and resource.get("extra_id") is not None:
         return self.get_common().helper_type().string().set_case(
           string_value= resource.get("extra_id"), 
@@ -236,6 +248,10 @@ class cloud_client_provider_azure_base(base):
       return resource
 
     if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
+      resourcegroups = self.get_common().helper_type().general().get_container_value(container= resource, value_key= ["extra_data", "resourcegroups"])
+      if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=resourcegroups):
+        return resourcegroups
+      
       if "extra_resourcegroups" in resource and resource.get("extra_resourcegroups") is not None:
         return resource.get("extra_resourcegroups")[0]
       
@@ -259,7 +275,11 @@ class cloud_client_provider_azure_base(base):
 
     if not self.get_common().helper_type().general().is_type(obj= resource, type_check= str):
       if self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
-          return self.get_resource_location(resource= resource.get("extra_region") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=resource.get("extra_region")) else resource.get("location"))
+        resource_region = self.get_common().helper_type().general().get_container_value(container= resource, value_key= ["extra_data", "region"])
+        if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=resource_region):
+          return resource_region
+      
+        return self.get_resource_location(resource= resource.get("extra_region") if not self.get_common().helper_type().string().is_null_or_whitespace(string_value=resource.get("extra_region")) else resource.get("location"))
       return self.get_resource_location(resource= getattr(resource, "location"))
 
     return resource

@@ -898,16 +898,20 @@ class cloud_client_provider_aws_base(base):
 
     tags = None
     if not self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
-      if hasattr(resource, "extra_tags"):
-        if resource.extra_tags is not None and len(resource.extra_tags) > 0:
-          return resource.extra_tags
-      if hasattr(resource, "tags"):
+      if hasattr(resource, "extra_data"):
+        tags = self.get_common().helper_type().general().get_container_value(container= resource, value_key= ["extra_data", "tags"])
+      elif hasattr(resource, "extra_tags"):
+        tags = resource.extra_tags
+      elif hasattr(resource, "tags"):
         tags = resource.tags
-        
+      
     elif self.get_common().helper_type().general().is_type(obj= resource, type_check= dict):
-      if resource.get("extra_tags") is not None and len(resource.get("extra_tags")) > 0:
-        return resource.get("extra_tags")
-      tags = resource.get("tags")
+      if hasattr(resource, "extra_data"):
+        tags = self.get_common().helper_type().general().get_container_value(container= resource, value_key= ["extra_data", "tags"])
+      elif resource.get("extra_tags") is not None and len(resource.get("extra_tags")) > 0:
+        tags = resource.get("extra_tags")
+      elif resource.get("tags") is not None and len(resource.get("tags")) > 0:
+        tags = resource.get("tags")
 
     if tags is None:
       tags = {}
